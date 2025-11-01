@@ -1,0 +1,84 @@
+{
+  "name": "painel-loja",
+  "version": "0.1.0",
+  "description": "Painel de administração SuperPet Store",
+  "author": "SuperPet",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "vite & wait-on http://localhost:5173 && electron electron/main.cjs",
+    "electron": "cross-env NODE_ENV=development ELECTRON_DISABLE_SECURITY_WARNINGS=true electron electron/main.cjs",
+    "electron:start": "npm run dev & npm run electron",
+    "desktop": "npm run build && cross-env NODE_ENV=production electron electron/main.cjs",
+    "desktop:build": "npm run build && npm run desktop",
+    "build:electron": "npm run build && electron-builder",
+    "build:win": "npm run build && electron-builder --win",
+    "dist": "npm run build && electron-builder",
+    "create-shortcut": "node scripts/create-shortcut.js"
+  },
+  "build": {
+    "appId": "com.superpet.painel-loja",
+    "productName": "SuperPet Painel",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "signAndEditExecutable": false,
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SuperPet Painel"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    }
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.15",
+    "@mui/material": "^5.15.15",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.17",
+    "cross-env": "^7.0.3",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^4.4.0"
+  }
+}
