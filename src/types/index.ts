@@ -141,6 +141,304 @@ export interface ServicesState {
 }
 
 // ============================================
+// AGENDA / AGENDAMENTOS
+// ============================================
+
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'no-show';
+
+export interface Appointment {
+  id: string;
+  customerId: string;
+  customerName: string;
+  petId: string;
+  petName: string;
+  serviceId: string;
+  serviceName: string;
+  serviceType: ServiceType;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  duration: number; // minutos
+  status: AppointmentStatus;
+  employeeId?: string;
+  employeeName?: string;
+  notes?: string;
+  reminderSent?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeBlock {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface AppointmentsState {
+  appointments: Appointment[];
+  timeBlocks: TimeBlock[];
+  selectedAppointment: Appointment | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// VACINAÇÃO
+// ============================================
+
+export type VaccineStatus = 'pending' | 'applied' | 'overdue';
+
+export interface Vaccination {
+  id: string;
+  petId: string;
+  petName: string;
+  vaccineName: string;
+  manufacturer?: string;
+  batchNumber?: string;
+  applicationDate: string;
+  nextDoseDate?: string;
+  veterinarianName?: string;
+  veterinarianCrmv?: string;
+  clinicName?: string;
+  notes?: string;
+  attachments?: string[]; // URLs de fotos da carteirinha
+  status: VaccineStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VaccinationsState {
+  vaccinations: Vaccination[];
+  selectedVaccination: Vaccination | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// FORNECEDORES
+// ============================================
+
+export type SupplierCategory = 'food' | 'medicine' | 'accessories' | 'services' | 'equipment' | 'other';
+
+export interface Supplier {
+  id: string;
+  name: string;
+  cnpj?: string;
+  email?: string;
+  phone: string;
+  address?: Address;
+  category: SupplierCategory;
+  products?: string[]; // Lista de produtos que fornece
+  paymentTerms?: string; // Prazos de pagamento (ex: "30/60 dias")
+  deliveryTime?: number; // Tempo de entrega em dias
+  minimumOrder?: number; // Valor mínimo do pedido
+  contactPerson?: string;
+  notes?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SuppliersState {
+  suppliers: Supplier[];
+  selectedSupplier: Supplier | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// PREÇOS E PROMOÇÕES
+// ============================================
+
+export type PromotionType = 'percentage' | 'fixed' | 'combo' | 'buy-x-get-y';
+
+export interface PriceTable {
+  id: string;
+  productId: string;
+  productName: string;
+  basePrice: number;
+  salePrice?: number;
+  memberPrice?: number; // Preço para clientes VIP
+  minimumQuantity?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Promotion {
+  id: string;
+  name: string;
+  description: string;
+  type: PromotionType;
+  discount: number; // Porcentagem ou valor fixo
+  productIds?: string[]; // Produtos incluídos
+  serviceIds?: string[]; // Serviços incluídos
+  startDate: string;
+  endDate: string;
+  active: boolean;
+  minimumPurchase?: number;
+  maxUses?: number;
+  usedCount: number;
+  conditions?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PromotionsState {
+  prices: PriceTable[];
+  promotions: Promotion[];
+  selectedPromotion: Promotion | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// LEMBRETES E NOTIFICAÇÕES
+// ============================================
+
+export type ReminderType = 'vaccination' | 'grooming' | 'appointment' | 'birthday' | 'custom';
+export type ReminderChannel = 'email' | 'sms' | 'whatsapp' | 'push';
+export type ReminderStatus = 'pending' | 'sent' | 'failed' | 'cancelled';
+
+export interface Reminder {
+  id: string;
+  type: ReminderType;
+  customerId: string;
+  customerName: string;
+  petId?: string;
+  petName?: string;
+  title: string;
+  message: string;
+  channel: ReminderChannel;
+  scheduledDate: string;
+  scheduledTime: string;
+  status: ReminderStatus;
+  sentAt?: string;
+  error?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReminderTemplate {
+  id: string;
+  name: string;
+  type: ReminderType;
+  subject: string;
+  message: string;
+  channel: ReminderChannel;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RemindersState {
+  reminders: Reminder[];
+  templates: ReminderTemplate[];
+  selectedReminder: Reminder | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// CONTAS A RECEBER
+// ============================================
+
+export type AccountStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
+export type PaymentType = 'boleto' | 'pix' | 'credit-card' | 'debit-card' | 'cash';
+
+export interface AccountReceivable {
+  id: string;
+  customerId: string;
+  customerName: string;
+  description: string;
+  amount: number;
+  dueDate: string;
+  paymentDate?: string;
+  paymentType?: PaymentType;
+  status: AccountStatus;
+  installment?: number; // Parcela atual
+  totalInstallments?: number; // Total de parcelas
+  notes?: string;
+  saleId?: string; // Referência a uma venda
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AccountsReceivableState {
+  accounts: AccountReceivable[];
+  selectedAccount: AccountReceivable | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// PERFIS E PERMISSÕES
+// ============================================
+
+export type UserRole2 = 'admin' | 'manager' | 'attendant' | 'groomer' | 'veterinarian' | 'cashier';
+
+export interface Permission {
+  id: string;
+  module: string;
+  action: 'create' | 'read' | 'update' | 'delete';
+  description: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SystemUser {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  roleId: string;
+  roleName: string;
+  phone?: string;
+  avatar?: string;
+  active: boolean;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  userName: string;
+  action: string;
+  module: string;
+  description: string;
+  ipAddress?: string;
+  timestamp: string;
+}
+
+export interface UsersState {
+  users: SystemUser[];
+  roles: Role[];
+  auditLogs: AuditLog[];
+  selectedUser: SystemUser | null;
+  selectedRole: Role | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
 // ORDEM DE SERVIÇO (BANHO/TOSA)
 // ============================================
 

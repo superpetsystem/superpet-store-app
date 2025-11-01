@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import PrivateRoute from './components/PrivateRoute';
 import ProtectedHome from './components/ProtectedHome';
-import Dashboard from './components/Dashboard';
-import CustomerDashboard from './components/CustomerDashboard';
+import DashboardV2 from './components/DashboardV2';
+import CustomerDashboardV2 from './components/CustomerDashboardV2';
 import Login from './pages/Login';
 import RegisterPage from './pages/RegisterPage';
 
@@ -16,6 +16,14 @@ import CustomersPage from './features/customers/components/CustomersPage';
 import PetsPage from './features/pets/components/PetsPage';
 import { StockPage } from './features/stock/components';
 import { ServiceOrdersPage } from './features/serviceOrders/components';
+import { AppointmentsPage } from './features/appointments/components';
+import { VaccinationsPage } from './features/vaccinations/components';
+import { SalesReportsPage } from './features/reports/components';
+import { SuppliersPage } from './features/suppliers/components';
+import { PromotionsPage } from './features/promotions/components';
+import { RemindersPage } from './features/reminders/components';
+import { AccountsPage } from './features/accounts/components';
+import { UsersPage } from './features/users/components';
 import SettingsPage from './pages/SettingsPage';
 
 // Customer Pages
@@ -27,6 +35,8 @@ import CustomerVaccinationsPage from './pages/customer/CustomerVaccinationsPage'
 import CustomerShopPage from './pages/customer/CustomerShopPage';
 import CustomerOrdersPage from './pages/customer/CustomerOrdersPage';
 import CustomerSettingsPage from './pages/customer/CustomerSettingsPage';
+import CustomerPromotionsPage from './pages/customer/CustomerPromotionsPage';
+import CustomerAccountsPage from './pages/customer/CustomerAccountsPage';
 
 /**
  * SISTEMA DE ROTAS E AUTENTICAÇÃO
@@ -44,6 +54,9 @@ import CustomerSettingsPage from './pages/customer/CustomerSettingsPage';
  * - "/pets" → Gestão de pets
  * - "/estoque" → Controle de estoque
  * - "/servicos" → Ordens de serviço (banho/tosa)
+ * - "/agenda" → Agenda de serviços
+ * - "/vacinas" → Ficha de vacinação
+ * - "/relatorios" → Relatórios de vendas
  * - "/configuracoes" → Configurações
  * 
  * PÁGINAS PROTEGIDAS CUSTOMER (com CustomerDashboard navbar):
@@ -54,6 +67,8 @@ import CustomerSettingsPage from './pages/customer/CustomerSettingsPage';
  * - "/customer/vaccinations" → Vacinação
  * - "/customer/shop" → Loja online
  * - "/customer/orders" → Meus pedidos
+ * - "/customer/promotions" → Promoções
+ * - "/customer/accounts" → Minhas contas
  * - "/customer/settings" → Configurações
  * 
  * FLUXO DE AUTENTICAÇÃO:
@@ -86,7 +101,7 @@ function App() {
             path="/"
             element={
               <PrivateRoute allowedRoles={['owner']}>
-                <Dashboard />
+                <DashboardV2 />
               </PrivateRoute>
             }
           >
@@ -97,6 +112,14 @@ function App() {
             <Route path="pets" element={<PetsPage />} />
             <Route path="estoque" element={<StockPage />} />
             <Route path="servicos" element={<ServiceOrdersPage />} />
+            <Route path="agenda" element={<AppointmentsPage />} />
+            <Route path="vacinas" element={<VaccinationsPage />} />
+            <Route path="relatorios" element={<SalesReportsPage />} />
+            <Route path="fornecedores" element={<SuppliersPage />} />
+            <Route path="promocoes" element={<PromotionsPage />} />
+            <Route path="lembretes" element={<RemindersPage />} />
+            <Route path="financeiro" element={<AccountsPage />} />
+            <Route path="usuarios" element={<UsersPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
           </Route>
 
@@ -115,7 +138,7 @@ function App() {
             path="/customer"
             element={
               <PrivateRoute allowedRoles={['customer']}>
-                <CustomerDashboard />
+                <CustomerDashboardV2 />
               </PrivateRoute>
             }
           >
@@ -125,6 +148,8 @@ function App() {
             <Route path="vaccinations" element={<CustomerVaccinationsPage />} />
             <Route path="shop" element={<CustomerShopPage />} />
             <Route path="orders" element={<CustomerOrdersPage />} />
+            <Route path="promotions" element={<CustomerPromotionsPage />} />
+            <Route path="accounts" element={<CustomerAccountsPage />} />
             <Route path="settings" element={<CustomerSettingsPage />} />
           </Route>
           
