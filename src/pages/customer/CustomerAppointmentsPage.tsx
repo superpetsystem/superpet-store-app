@@ -1,18 +1,10 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import AppointmentsPage from '../../features/appointments/components/AppointmentsPage';
 
 const CustomerAppointmentsPage = () => {
-  return (
-    <Box>
-      <Typography variant="h4" fontWeight="bold" sx={{ color: '#0E6A6B', mb: 3 }}>
-        Agendamentos
-      </Typography>
-      <Typography>Página de Agendamentos em desenvolvimento...</Typography>
-    </Box>
-  );
+  // Para customer, mostra apenas seus agendamentos
+  // O componente AppointmentsPage pode ser usado tanto por owner quanto customer
+  return <AppointmentsPage />;
 };
 
 export default CustomerAppointmentsPage;
-
-
-

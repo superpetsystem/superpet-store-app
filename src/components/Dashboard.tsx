@@ -44,6 +44,9 @@ import {
   Notifications as NotificationsIcon,
   AttachMoney as MoneyIcon,
   Warning as WarningIcon,
+  CalendarMonth,
+  Vaccines,
+  Assessment,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
@@ -65,12 +68,15 @@ const Dashboard = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Agenda', icon: <CalendarMonth />, path: '/agenda' },
     { text: 'Produtos', icon: <ShoppingCart />, path: '/produtos' },
     { text: 'Vendas', icon: <Store />, path: '/vendas' },
     { text: 'Clientes', icon: <People />, path: '/clientes' },
     { text: 'Pets', icon: <Pets />, path: '/pets' },
     { text: 'Estoque', icon: <Inventory />, path: '/estoque' },
     { text: 'Serviços', icon: <ContentCut />, path: '/servicos' },
+    { text: 'Vacinação', icon: <Vaccines />, path: '/vacinas' },
+    { text: 'Relatórios', icon: <Assessment />, path: '/relatorios' },
     { text: 'Configurações', icon: <Settings />, path: '/configuracoes' },
   ];
 

@@ -16,6 +16,9 @@ import CustomersPage from './features/customers/components/CustomersPage';
 import PetsPage from './features/pets/components/PetsPage';
 import { StockPage } from './features/stock/components';
 import { ServiceOrdersPage } from './features/serviceOrders/components';
+import { AppointmentsPage } from './features/appointments/components';
+import { VaccinationsPage } from './features/vaccinations/components';
+import { SalesReportsPage } from './features/reports/components';
 import SettingsPage from './pages/SettingsPage';
 
 // Customer Pages
@@ -44,6 +47,9 @@ import CustomerSettingsPage from './pages/customer/CustomerSettingsPage';
  * - "/pets" → Gestão de pets
  * - "/estoque" → Controle de estoque
  * - "/servicos" → Ordens de serviço (banho/tosa)
+ * - "/agenda" → Agenda de serviços
+ * - "/vacinas" → Ficha de vacinação
+ * - "/relatorios" → Relatórios de vendas
  * - "/configuracoes" → Configurações
  * 
  * PÁGINAS PROTEGIDAS CUSTOMER (com CustomerDashboard navbar):
@@ -97,6 +103,9 @@ function App() {
             <Route path="pets" element={<PetsPage />} />
             <Route path="estoque" element={<StockPage />} />
             <Route path="servicos" element={<ServiceOrdersPage />} />
+            <Route path="agenda" element={<AppointmentsPage />} />
+            <Route path="vacinas" element={<VaccinationsPage />} />
+            <Route path="relatorios" element={<SalesReportsPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
           </Route>
 

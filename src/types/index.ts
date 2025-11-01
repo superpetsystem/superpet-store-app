@@ -141,6 +141,86 @@ export interface ServicesState {
 }
 
 // ============================================
+// AGENDA / AGENDAMENTOS
+// ============================================
+
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'no-show';
+
+export interface Appointment {
+  id: string;
+  customerId: string;
+  customerName: string;
+  petId: string;
+  petName: string;
+  serviceId: string;
+  serviceName: string;
+  serviceType: ServiceType;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  duration: number; // minutos
+  status: AppointmentStatus;
+  employeeId?: string;
+  employeeName?: string;
+  notes?: string;
+  reminderSent?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeBlock {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface AppointmentsState {
+  appointments: Appointment[];
+  timeBlocks: TimeBlock[];
+  selectedAppointment: Appointment | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// VACINAÇÃO
+// ============================================
+
+export type VaccineStatus = 'pending' | 'applied' | 'overdue';
+
+export interface Vaccination {
+  id: string;
+  petId: string;
+  petName: string;
+  vaccineName: string;
+  manufacturer?: string;
+  batchNumber?: string;
+  applicationDate: string;
+  nextDoseDate?: string;
+  veterinarianName?: string;
+  veterinarianCrmv?: string;
+  clinicName?: string;
+  notes?: string;
+  attachments?: string[]; // URLs de fotos da carteirinha
+  status: VaccineStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VaccinationsState {
+  vaccinations: Vaccination[];
+  selectedVaccination: Vaccination | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
 // ORDEM DE SERVIÇO (BANHO/TOSA)
 // ============================================
 

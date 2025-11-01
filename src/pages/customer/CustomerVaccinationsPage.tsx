@@ -1,15 +1,9 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import VaccinationsPage from '../../features/vaccinations/components/VaccinationsPage';
 
 const CustomerVaccinationsPage = () => {
-  return (
-    <Box>
-      <Typography variant="h4" fontWeight="bold" sx={{ color: '#0E6A6B', mb: 3 }}>
-        Vacinação
-      </Typography>
-      <Typography>Página de Vacinação em desenvolvimento...</Typography>
-    </Box>
-  );
+  // Para customer, mostra vacinações de todos os seus pets (sem filtro específico)
+  return <VaccinationsPage isCustomerView={true} />;
 };
 
 export default CustomerVaccinationsPage;
