@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useThemeMode } from '../context/ThemeContext'
+import { typography } from '../theme/typography'
 import {
   AppBar,
   Toolbar,
@@ -87,11 +88,11 @@ const Navbar = () => {
           sx={{ 
             flexGrow: 1, 
             color: '#F8F5EE',
-            fontSize: { xs: '0.95rem', sm: '1.25rem' }
+            fontSize: typography.h6,
           }}
-          >
-            Portal da Loja SuperPet
-          </Typography>
+        >
+          Portal da Loja SuperPet
+        </Typography>
 
         {/* Ações Rápidas - APENAS DESKTOP */}
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, mr: 2 }}>
@@ -139,20 +140,21 @@ const Navbar = () => {
         </Tooltip>
 
         {/* Menu Dropdown do Navbar (Mobile) */}
-        <Menu
-          sx={{ mt: '45px' }}
-          anchorEl={anchorElNavbar}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          open={Boolean(anchorElNavbar)}
-          onClose={handleCloseNavbar}
+        {isMobile && (
+          <Menu
+            sx={{ mt: '45px' }}
+            anchorEl={anchorElNavbar}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorElNavbar)}
+            onClose={handleCloseNavbar}
           PaperProps={{
             sx: {
               bgcolor: isDark ? '#1C2128' : '#F8F5EE',
@@ -226,9 +228,10 @@ const Navbar = () => {
             <ListItemIcon>
               <Logout sx={{ color: '#E47B24' }} />
             </ListItemIcon>
-            <ListItemText>Sair</ListItemText>
+            <ListItemText>Sair            </ListItemText>
           </MenuItem>
-        </Menu>
+          </Menu>
+        )}
 
         {/* Menu do Usuário - APENAS DESKTOP */}
         <Tooltip title="Configurações de conta">
@@ -243,20 +246,21 @@ const Navbar = () => {
         </Tooltip>
 
         {/* Menu do Usuário (Desktop) */}
-        <Menu
-          sx={{ mt: '45px' }}
-          anchorEl={anchorElUser}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          open={Boolean(anchorElUser)}
-          onClose={handleCloseUserMenu}
+        {!isMobile && (
+          <Menu
+            sx={{ mt: '45px' }}
+            anchorEl={anchorElUser}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorElUser)}
+            onClose={handleCloseUserMenu}
           PaperProps={{
             sx: {
               bgcolor: isDark ? '#1C2128' : '#F8F5EE',
@@ -324,9 +328,10 @@ const Navbar = () => {
             <ListItemIcon>
               <Logout sx={{ color: '#E47B24' }} />
             </ListItemIcon>
-            <ListItemText>Sair</ListItemText>
+            <ListItemText>Sair            </ListItemText>
           </MenuItem>
-        </Menu>
+          </Menu>
+        )}
       </Toolbar>
     </AppBar>
   )

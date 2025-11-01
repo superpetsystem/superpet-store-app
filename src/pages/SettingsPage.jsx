@@ -8,6 +8,7 @@ import {
   Language,
 } from '@mui/icons-material'
 import { useThemeMode } from '../context/ThemeContext'
+import { typography } from '../theme/typography'
 
 const SettingsPage = () => {
   const { isDark } = useThemeMode()
@@ -44,11 +45,22 @@ const SettingsPage = () => {
       <Typography
         variant="h4"
         fontWeight="bold"
-        sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 1 }}
+        sx={{ 
+          color: isDark ? '#12888A' : '#0E6A6B', 
+          mb: 1,
+          fontSize: typography.pageTitle,
+        }}
       >
         Configurações ⚙️
       </Typography>
-      <Typography variant="body1" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E', mb: 4 }}>
+      <Typography 
+        variant="body1" 
+        sx={{ 
+          color: isDark ? '#F8F5EE' : '#1E1E1E', 
+          mb: 4,
+          fontSize: typography.pageSubtitle,
+        }}
+      >
         Configure as preferências do sistema SuperPet
       </Typography>
 
@@ -75,11 +87,22 @@ const SettingsPage = () => {
                 <Typography
                   variant="h6"
                   fontWeight="bold"
-                  sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 1 }}
+                  sx={{ 
+                    color: isDark ? '#12888A' : '#0E6A6B', 
+                    mb: 1,
+                    fontSize: typography.cardTitle,
+                  }}
                 >
                   {section.title}
                 </Typography>
-                <Typography variant="body2" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E', mb: 2 }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: isDark ? '#F8F5EE' : '#1E1E1E', 
+                    mb: 2,
+                    fontSize: typography.smallText,
+                  }}
+                >
                   {section.description}
                 </Typography>
                 <Button

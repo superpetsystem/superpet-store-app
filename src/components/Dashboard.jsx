@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useThemeMode } from '../context/ThemeContext'
+import { typography } from '../theme/typography'
 import Navbar from './Navbar'
 import {
   Drawer,
@@ -140,6 +141,31 @@ const Dashboard = () => {
       {/* Navbar Component */}
       <Navbar />
 
+      {/* Botão Sidebar - APENAS MOBILE (fixo superior esquerdo) */}
+      {isMobile && (
+        <IconButton
+          onClick={() => setDrawerOpen(!drawerOpen)}
+          sx={{
+            position: 'fixed',
+            top: 72, // Abaixo do navbar
+            left: 8,
+            bgcolor: '#E47B24',
+            color: '#F8F5EE',
+            zIndex: 1000, // Alto o suficiente mas sem cobrir modais
+            width: 44,
+            height: 44,
+            boxShadow: 2,
+            '&:hover': {
+              bgcolor: '#C26619',
+              boxShadow: 4,
+            },
+            transition: 'all 0.3s',
+          }}
+        >
+          <ViewSidebar sx={{ fontSize: 20 }} />
+        </IconButton>
+      )}
+
       <Box className="flex">
         {/* Drawer */}
         {!isMobile && (
@@ -188,7 +214,14 @@ const Dashboard = () => {
                 gap: 1,
               }}>
                 <Store sx={{ color: '#E47B24', fontSize: 32 }} />
-                <Typography variant="h6" fontWeight="bold" sx={{ color: '#0E6A6B' }}>
+                <Typography 
+                  variant="h6" 
+                  fontWeight="bold" 
+                  sx={{ 
+                    color: '#0E6A6B',
+                    fontSize: typography.h6,
+                  }}
+                >
                   SuperPet
                 </Typography>
               </Box>
@@ -232,6 +265,7 @@ const Dashboard = () => {
           sx={{
             flexGrow: 1,
             p: { xs: 2, sm: 3, md: 4, lg: 6 },
+            pt: { xs: 8, md: 4 }, // Padding-top maior no mobile para não ficar atrás do botão
             width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
             transition: 'width 0.3s ease, margin 0.3s ease',
             position: 'relative',
@@ -243,28 +277,6 @@ const Dashboard = () => {
           </Container>
         </Box>
       </Box>
-
-      {/* Botão Flutuante Sidebar - APENAS MOBILE */}
-      {isMobile && (
-        <FabButton
-          color="primary"
-          onClick={() => setDrawerOpen(!drawerOpen)}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            bgcolor: '#E47B24',
-            color: '#F8F5EE',
-            zIndex: (theme) => theme.zIndex.drawer - 1,
-            '&:hover': {
-              bgcolor: '#C26619',
-            },
-            boxShadow: 4,
-          }}
-        >
-          <ViewSidebar />
-        </FabButton>
-      )}
     </Box>
   )
 }

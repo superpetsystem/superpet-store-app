@@ -13,6 +13,7 @@ import {
   AttachMoney,
 } from '@mui/icons-material'
 import { useThemeMode } from '../context/ThemeContext'
+import { typography } from '../theme/typography'
 
 const DashboardPage = () => {
   const { isDark } = useThemeMode()
@@ -55,7 +56,7 @@ const DashboardPage = () => {
         sx={{
           mb: 1,
           color: isDark ? '#12888A' : '#0E6A6B',
-          fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' },
+          fontSize: typography.pageTitle,
         }}
       >
         Dashboard 🐾
@@ -65,7 +66,7 @@ const DashboardPage = () => {
         sx={{
           color: isDark ? '#F8F5EE' : '#1E1E1E',
           mb: 4,
-          fontSize: { xs: '0.875rem', sm: '1rem' },
+          fontSize: typography.pageSubtitle,
         }}
       >
         Visão geral do desempenho da sua loja SuperPet
@@ -113,11 +114,21 @@ const DashboardPage = () => {
                 <Typography
                   variant="h5"
                   fontWeight="bold"
-                  sx={{ mb: 0.5, color: isDark ? '#F8F5EE' : '#0E6A6B' }}
+                  sx={{ 
+                    mb: 0.5, 
+                    color: isDark ? '#F8F5EE' : '#0E6A6B',
+                    fontSize: typography.cardValue,
+                  }}
                 >
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#1E1E1E' }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: isDark ? '#E6E1D6' : '#1E1E1E',
+                    fontSize: typography.cardLabel,
+                  }}
+                >
                   {stat.title}
                 </Typography>
               </CardContent>
