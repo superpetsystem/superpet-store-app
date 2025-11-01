@@ -23,6 +23,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 // Log para debug (apenas em desenvolvimento)
 if (process.env.NODE_ENV === 'development') {
-  console.log('✅ SuperPet Painel - Preload completo');
+  console.log('✅ SuperPet Portal - Preload completo');
 }
 

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const appName = 'SuperPet Painel';
+const appName = 'SuperPet Portal';
 const desktopPath = path.join(process.env.USERPROFILE, 'Desktop');
 const shortcutPath = path.join(desktopPath, `${appName}.lnk`);
 const exePath = path.join(__dirname, '..', 'release', 'win-unpacked', `${appName}.exe`);
@@ -21,7 +21,7 @@ $Shortcut = $WshShell.CreateShortcut("${shortcutPath}")
 $Shortcut.TargetPath = "${exePath}"
 $Shortcut.WorkingDirectory = "${path.dirname(exePath)}"
 $Shortcut.IconLocation = "${exePath},0"
-$Shortcut.Description = "SuperPet Painel - Painel da Loja"
+$Shortcut.Description = "SuperPet Portal - Portal da Loja"
 $Shortcut.Save()
 Write-Host "Atalho criado com sucesso!"
 `;

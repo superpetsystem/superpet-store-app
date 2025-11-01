@@ -1,6 +1,6 @@
-# Painel da Loja - SuperPet 🐾
+# Portal da Loja - SuperPet 🐾
 
-Projeto para o Painel da Loja desenvolvido com React, Vite e Electron, proporcionando uma experiência performática em **Web**, **Mobile (WebView)** e **Desktop**.
+Projeto para o Portal da Loja desenvolvido com React, Vite e Electron, proporcionando uma experiência performática em **Web**, **Mobile (WebView)** e **Desktop**.
 
 ## 🚀 Stack Tecnológica
 
@@ -122,16 +122,18 @@ npm run build:win
 
 📖 Para mais detalhes sobre build, veja [README-BUILD.md](./README-BUILD.md)
 
-## 🎨 Funcionalidades do Dashboard
+## 🎨 Funcionalidades
 
-- ✅ Layout responsivo (mobile, tablet, desktop)
-- ✅ Menu lateral adaptável
-- ✅ Cards de estatísticas em tempo real
-- ✅ Botões de ações rápidas
-- ✅ Detecção automática de plataforma (Web/Electron)
-- ✅ Integração Material-UI + Tailwind CSS
-- ✅ Suporte a tema claro/escuro
-- ✅ Ícones do Material Design
+- ✅ **Sistema de Login** com autenticação
+- ✅ **Rotas Protegidas** (Dashboard, Produtos, Vendas, Clientes, Estoque, Configurações)
+- ✅ **Layout Responsivo** (mobile, tablet, desktop)
+- ✅ **Sidebar Adaptável** (expansível/comprimível no desktop, drawer no mobile)
+- ✅ **Tema Claro/Escuro** com persistência
+- ✅ **Cards de Estatísticas** em tempo real
+- ✅ **Botões de Ações Rápidas** no navbar
+- ✅ **Detecção de Plataforma** (Web/Electron)
+- ✅ **Design System SuperPet** (Material-UI + Tailwind CSS)
+- ✅ **Navbar Componentizado** (mobile/desktop)
 
 ## 🔧 Configuração
 

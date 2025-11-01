@@ -1,7 +1,7 @@
 # Script PowerShell para criar atalho na área de trabalho
 param(
-    [string]$ExePath = ".\release\win-unpacked\SuperPet Painel.exe",
-    [string]$AppName = "SuperPet Painel"
+    [string]$ExePath = ".\release\win-unpacked\SuperPet Portal.exe",
+    [string]$AppName = "SuperPet Portal"
 )
 
 $DesktopPath = [Environment]::GetFolderPath("Desktop")
@@ -20,7 +20,7 @@ $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
 $Shortcut.TargetPath = (Resolve-Path $ExePath).Path
 $Shortcut.WorkingDirectory = Split-Path -Parent $Shortcut.TargetPath
 $Shortcut.IconLocation = "$($Shortcut.TargetPath),0"
-$Shortcut.Description = "SuperPet Painel - Painel da Loja"
+$Shortcut.Description = "SuperPet Portal - Portal da Loja"
 $Shortcut.Save()
 
 Write-Host "✅ Atalho criado com sucesso na área de trabalho!" -ForegroundColor Green
