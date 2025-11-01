@@ -10,6 +10,8 @@ import {
   InputAdornment,
   IconButton,
   Alert,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import {
   Visibility,
@@ -21,6 +23,8 @@ import {
 
 const Login = () => {
   const navigate = useNavigate()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -54,7 +58,7 @@ const Login = () => {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #0E6A6B 0%, #12888A 50%, #E47B24 100%)',
-        p: 2,
+        p: { xs: 2, sm: 3 },
       }}
     >
       <Card
@@ -63,70 +67,134 @@ const Login = () => {
           width: '100%',
           bgcolor: '#F8F5EE',
           boxShadow: 6,
-          borderRadius: 3,
+          borderRadius: { xs: 2, sm: 3 },
         }}
       >
-        <CardContent sx={{ p: 4 }}>
+        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
           {/* Logo e Título */}
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Store sx={{ fontSize: 64, color: '#E47B24', mb: 2 }} />
+          <Box sx={{ textAlign: 'center', mb: { xs: 3, sm: 4 } }}>
+            <Store sx={{ 
+              fontSize: { xs: 48, sm: 64 }, 
+              color: '#E47B24', 
+              mb: { xs: 1, sm: 2 } 
+            }} />
             <Typography
               variant="h4"
               fontWeight="bold"
-              sx={{ color: '#0E6A6B', mb: 1 }}
+              sx={{ 
+                color: '#0E6A6B', 
+                mb: 0.5,
+                fontSize: { xs: '1.75rem', sm: '2.125rem' }
+              }}
             >
               SuperPet
             </Typography>
-            <Typography variant="body2" sx={{ color: '#1E1E1E' }}>
-              Painel de Administração
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: '#1E1E1E',
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
+              Portal Loja
             </Typography>
           </Box>
 
           {/* Formulário */}
           <form onSubmit={handleLogin}>
+            {/* Campo Email */}
             <Box sx={{ mb: 3 }}>
+              {/* Label + Ícone (Apenas Mobile) */}
+              {isMobile && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Person sx={{ color: '#0E6A6B', fontSize: 20 }} />
+                  <Typography 
+                    variant="body2" 
+                    fontWeight="600" 
+                    sx={{ color: '#0E6A6B' }}
+                  >
+                    Email
+                  </Typography>
+                </Box>
+              )}
+              
               <TextField
                 fullWidth
-                label="Email"
+                label={!isMobile ? 'Email' : ''}
+                placeholder={isMobile ? 'Digite seu email' : ''}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                InputProps={{
+                InputProps={!isMobile ? {
                   startAdornment: (
                     <InputAdornment position="start">
                       <Person sx={{ color: '#0E6A6B' }} />
                     </InputAdornment>
                   ),
-                }}
+                } : {}}
                 sx={{
                   '& .MuiOutlinedInput-root': {
+                    height: isMobile ? 'auto' : '56px',
+                    backgroundColor: '#FFFFFF',
+                    '& fieldset': {
+                      borderColor: '#0E6A6B',
+                      borderWidth: '1px',
+                    },
                     '&:hover fieldset': {
                       borderColor: '#0E6A6B',
+                      borderWidth: '1.5px',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#0E6A6B',
+                      borderColor: '#E47B24',
+                      borderWidth: '2px',
+                    },
+                    '& input': {
+                      color: '#1E1E1E',
+                      fontWeight: 500,
                     },
                   },
-                  '& .MuiInputLabel-root.Mui-focused': {
+                  '& .MuiInputLabel-root': {
                     color: '#0E6A6B',
+                    '&.Mui-focused': {
+                      color: '#E47B24',
+                      fontWeight: 600,
+                    },
                   },
                 }}
               />
             </Box>
 
+            {/* Campo Senha */}
             <Box sx={{ mb: 3 }}>
+              {/* Label + Ícone (Apenas Mobile) */}
+              {isMobile && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Lock sx={{ color: '#0E6A6B', fontSize: 20 }} />
+                  <Typography 
+                    variant="body2" 
+                    fontWeight="600" 
+                    sx={{ color: '#0E6A6B' }}
+                  >
+                    Senha
+                  </Typography>
+                </Box>
+              )}
+              
               <TextField
                 fullWidth
-                label="Senha"
+                label={!isMobile ? 'Senha' : ''}
+                placeholder={isMobile ? 'Digite sua senha' : ''}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock sx={{ color: '#0E6A6B' }} />
-                    </InputAdornment>
-                  ),
+                  ...(!isMobile && {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock sx={{ color: '#0E6A6B' }} />
+                      </InputAdornment>
+                    ),
+                  }),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -140,22 +208,44 @@ const Login = () => {
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
+                    height: isMobile ? 'auto' : '56px',
+                    backgroundColor: '#FFFFFF',
+                    '& fieldset': {
+                      borderColor: '#0E6A6B',
+                      borderWidth: '1px',
+                    },
                     '&:hover fieldset': {
                       borderColor: '#0E6A6B',
+                      borderWidth: '1.5px',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#0E6A6B',
+                      borderColor: '#E47B24',
+                      borderWidth: '2px',
+                    },
+                    '& input': {
+                      color: '#1E1E1E',
+                      fontWeight: 500,
                     },
                   },
-                  '& .MuiInputLabel-root.Mui-focused': {
+                  '& .MuiInputLabel-root': {
                     color: '#0E6A6B',
+                    '&.Mui-focused': {
+                      color: '#E47B24',
+                      fontWeight: 600,
+                    },
                   },
                 }}
               />
             </Box>
 
             {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 3,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
                 {error}
               </Alert>
             )}
@@ -171,9 +261,14 @@ const Login = () => {
                 color: '#F8F5EE',
                 fontWeight: 'bold',
                 mb: 2,
+                borderRadius: 2,
+                textTransform: 'none',
                 '&:hover': {
                   bgcolor: '#0A5152',
+                  transform: 'translateY(-2px)',
+                  boxShadow: 4,
                 },
+                transition: 'all 0.3s',
               }}
             >
               Entrar
@@ -184,8 +279,10 @@ const Login = () => {
               variant="text"
               sx={{
                 color: '#E47B24',
+                fontSize: '0.95rem',
+                textTransform: 'none',
                 '&:hover': {
-                  bgcolor: 'transparent',
+                  bgcolor: 'rgba(228, 123, 36, 0.08)',
                   textDecoration: 'underline',
                 },
               }}
@@ -197,8 +294,8 @@ const Login = () => {
           {/* Info de teste */}
           <Box
             sx={{
-              mt: 4,
-              p: 2,
+              mt: { xs: 3, sm: 4 },
+              p: { xs: 1.5, sm: 2 },
               bgcolor: '#F2EBDD',
               borderRadius: 2,
               border: '1px solid #E47B24',
@@ -206,7 +303,13 @@ const Login = () => {
           >
             <Typography
               variant="caption"
-              sx={{ color: '#1E1E1E', display: 'block', textAlign: 'center' }}
+              sx={{ 
+                color: '#1E1E1E', 
+                display: 'block', 
+                textAlign: 'center',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                lineHeight: 1.6,
+              }}
             >
               <strong>Credenciais de teste:</strong>
               <br />

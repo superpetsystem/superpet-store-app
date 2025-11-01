@@ -1,7 +1,7 @@
 {
-  "name": "painel-loja",
+  "name": "portal-loja",
   "version": "0.1.0",
-  "description": "Painel de administração SuperPet Store",
+  "description": "Portal da Loja SuperPet Store",
   "author": "SuperPet",
   "private": true,
   "type": "module",
@@ -21,8 +21,8 @@
     "create-shortcut": "node scripts/create-shortcut.js"
   },
   "build": {
-    "appId": "com.superpet.painel-loja",
-    "productName": "SuperPet Painel",
+    "appId": "com.superpet.portal-loja",
+    "productName": "SuperPet Portal",
     "directories": {
       "output": "release"
     },
@@ -56,7 +56,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "SuperPet Painel"
+      "shortcutName": "SuperPet Portal"
     },
     "portable": {
       "artifactName": "${productName}-Portable-${version}.${ext}"

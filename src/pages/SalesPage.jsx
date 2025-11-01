@@ -1,6 +1,7 @@
 import { Box, Typography, Button, Card, CardContent } from '@mui/material'
 import { Add, Store } from '@mui/icons-material'
 import { useThemeMode } from '../context/ThemeContext'
+import { typography } from '../theme/typography'
 
 const SalesPage = () => {
   const { isDark } = useThemeMode()
@@ -20,11 +21,21 @@ const SalesPage = () => {
           <Typography
             variant="h4"
             fontWeight="bold"
-            sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 1 }}
+            sx={{ 
+              color: isDark ? '#12888A' : '#0E6A6B', 
+              mb: 1,
+              fontSize: typography.pageTitle,
+            }}
           >
             Vendas 💰
           </Typography>
-          <Typography variant="body1" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E' }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: isDark ? '#F8F5EE' : '#1E1E1E',
+              fontSize: typography.pageSubtitle,
+            }}
+          >
             Acompanhe e gerencie as vendas da loja
           </Typography>
         </Box>
@@ -50,11 +61,28 @@ const SalesPage = () => {
         border: isDark ? '1px solid #12888A' : 'none',
       }}>
         <CardContent>
-          <Store sx={{ fontSize: 100, color: isDark ? '#12888A' : '#0E6A6B', mb: 3 }} />
-          <Typography variant="h5" sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 2 }}>
+          <Store sx={{ 
+            fontSize: { xs: 60, sm: 80, md: 100 }, 
+            color: isDark ? '#12888A' : '#0E6A6B', 
+            mb: 3 
+          }} />
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              color: isDark ? '#12888A' : '#0E6A6B', 
+              mb: 2,
+              fontSize: typography.sectionTitle,
+            }}
+          >
             Página de Vendas
           </Typography>
-          <Typography variant="body1" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E' }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: isDark ? '#F8F5EE' : '#1E1E1E',
+              fontSize: typography.bodyText,
+            }}
+          >
             Aqui você poderá gerenciar todas as vendas realizadas
           </Typography>
         </CardContent>
