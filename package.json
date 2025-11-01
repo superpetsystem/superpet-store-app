@@ -9,15 +9,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:web": "vite build",
+    "build:electron": "cross-env ELECTRON=true vite build && electron-builder",
     "preview": "vite preview",
     "electron:dev": "vite & wait-on http://localhost:5173 && electron electron/main.cjs",
     "electron": "cross-env NODE_ENV=development ELECTRON_DISABLE_SECURITY_WARNINGS=true electron electron/main.cjs",
     "electron:start": "npm run dev & npm run electron",
-    "desktop": "npm run build && cross-env NODE_ENV=production electron electron/main.cjs",
-    "desktop:build": "npm run build && npm run desktop",
-    "build:electron": "npm run build && electron-builder",
-    "build:win": "npm run build && electron-builder --win",
-    "dist": "npm run build && electron-builder",
+    "desktop": "cross-env ELECTRON=true vite build && cross-env NODE_ENV=production electron electron/main.cjs",
+    "desktop:build": "npm run desktop",
+    "build:win": "cross-env ELECTRON=true vite build && electron-builder --win",
+    "dist": "cross-env ELECTRON=true vite build && electron-builder",
     "create-shortcut": "node scripts/create-shortcut.js"
   },
   "build": {
