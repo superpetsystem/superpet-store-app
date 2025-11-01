@@ -9,6 +9,11 @@ import salesReducer from './slices/salesSlice';
 import stockReducer from './slices/stockSlice';
 import appointmentsReducer from './slices/appointmentsSlice';
 import vaccinationsReducer from './slices/vaccinationsSlice';
+import suppliersReducer from './slices/suppliersSlice';
+import promotionsReducer from './slices/promotionsSlice';
+import remindersReducer from './slices/remindersSlice';
+import accountsReducer from './slices/accountsSlice';
+import usersReducer from './slices/usersSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +27,11 @@ export const store = configureStore({
     stock: stockReducer,
     appointments: appointmentsReducer,
     vaccinations: vaccinationsReducer,
+    suppliers: suppliersReducer,
+    promotions: promotionsReducer,
+    reminders: remindersReducer,
+    accounts: accountsReducer,
+    users: usersReducer,
   },
 });
 
