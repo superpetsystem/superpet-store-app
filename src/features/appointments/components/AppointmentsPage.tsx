@@ -15,6 +15,10 @@ import {
   Avatar,
   TextField,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,19 +30,27 @@ import {
   PersonOff,
   ChevronLeft,
   ChevronRight,
+  Edit,
+  Delete,
 } from '@mui/icons-material';
 import { useThemeMode } from '../../../context/ThemeContext';
 import { typography } from '../../../theme/typography';
 import { useAppointments } from '../hooks/useAppointments';
 import { Appointment, AppointmentStatus } from '../../../types';
 
-const AppointmentsPage = () => {
+interface AppointmentsPageProps {
+  headerAction?: React.ReactNode;
+}
+
+const AppointmentsPage: React.FC<AppointmentsPageProps> = ({ headerAction }) => {
   const { isDark } = useThemeMode();
-  const { appointments, loading, loadAppointments, changeStatus } = useAppointments();
+  const { appointments, loading, loadAppointments, changeStatus, deleteAppointment } = useAppointments();
   
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'day' | 'all'>('day');
+  const [deleteDialog, setDeleteDialog] = useState<Appointment | null>(null);
+  const [cancelDialog, setCancelDialog] = useState<Appointment | null>(null);
 
   useEffect(() => {
     console.log('Carregando agendamentos - Modo:', viewMode, 'Data:', selectedDate);
@@ -116,6 +128,40 @@ const AppointmentsPage = () => {
     return date.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
   };
 
+  const handleCancel = async () => {
+    if (!cancelDialog) return;
+    
+    const response = await changeStatus(cancelDialog.id, 'cancelled');
+    if (response.success) {
+      setCancelDialog(null);
+      alert('✅ Agendamento cancelado!');
+      if (viewMode === 'day') {
+        loadAppointments({ date: selectedDate });
+      } else {
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const endDate = new Date().toISOString().split('T')[0];
+        loadAppointments({ startDate, endDate });
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteDialog) return;
+    
+    const response = await deleteAppointment(deleteDialog.id);
+    if (response.success) {
+      setDeleteDialog(null);
+      alert('✅ Agendamento excluído!');
+      if (viewMode === 'day') {
+        loadAppointments({ date: selectedDate });
+      } else {
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const endDate = new Date().toISOString().split('T')[0];
+        loadAppointments({ startDate, endDate });
+      }
+    }
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -133,18 +179,21 @@ const AppointmentsPage = () => {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          sx={{
-            bgcolor: '#E47B24',
-            color: '#F8F5EE',
-            fontWeight: 600,
-            '&:hover': { bgcolor: '#C26619' },
-          }}
-        >
-          Novo Agendamento
-        </Button>
+        {headerAction || (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{
+              bgcolor: '#E47B24',
+              color: '#F8F5EE',
+              fontWeight: 600,
+              '&:hover': { bgcolor: '#C26619' },
+            }}
+            onClick={() => alert('Funcionalidade de criar agendamento em desenvolvimento')}
+          >
+            Novo Agendamento
+          </Button>
+        )}
       </Box>
 
       {/* Stats Cards */}
@@ -336,6 +385,18 @@ const AppointmentsPage = () => {
                         boxShadow: 2,
                       },
                     }}
+                    secondaryAction={
+                      <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        {appointment.status === 'scheduled' && (
+                          <IconButton size="small" onClick={() => setCancelDialog(appointment)} sx={{ color: '#FF9800' }}>
+                            <Cancel />
+                          </IconButton>
+                        )}
+                        <IconButton size="small" onClick={() => setDeleteDialog(appointment)} sx={{ color: '#F44336' }}>
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    }
                   >
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: getStatusColor(appointment.status) }}>
@@ -383,6 +444,42 @@ const AppointmentsPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Cancel Dialog */}
+      <Dialog open={!!cancelDialog} onClose={() => setCancelDialog(null)}>
+        <DialogTitle sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', color: isDark ? '#F8F5EE' : '#0E6A6B' }}>
+          ⚠️ Cancelar Agendamento
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', mt: 2 }}>
+          <Typography sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
+            Confirma cancelamento do agendamento de <strong>{cancelDialog?.petName}</strong> para <strong>{cancelDialog?.serviceName}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+          <Button onClick={() => setCancelDialog(null)}>Não</Button>
+          <Button variant="contained" onClick={handleCancel} sx={{ bgcolor: '#FF9800', '&:hover': { bgcolor: '#F57C00' } }}>
+            Sim, Cancelar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
+        <DialogTitle sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', color: isDark ? '#F8F5EE' : '#0E6A6B' }}>
+          🗑️ Excluir Agendamento
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', mt: 2 }}>
+          <Typography sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
+            Confirma exclusão permanente do agendamento de <strong>{deleteDialog?.petName}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+          <Button onClick={() => setDeleteDialog(null)}>Não</Button>
+          <Button variant="contained" onClick={handleDelete} sx={{ bgcolor: '#F44336', '&:hover': { bgcolor: '#D32F2F' } }}>
+            Sim, Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

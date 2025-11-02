@@ -439,6 +439,502 @@ export interface UsersState {
 }
 
 // ============================================
+// CRM - HISTÓRICO E TAGS
+// ============================================
+
+export type InteractionType = 'call' | 'email' | 'whatsapp' | 'visit' | 'purchase' | 'service' | 'complaint' | 'note';
+
+export interface CustomerInteraction {
+  id: string;
+  customerId: string;
+  type: InteractionType;
+  title: string;
+  description: string;
+  userId?: string;
+  userName?: string;
+  relatedId?: string; // ID de venda, serviço, etc.
+  timestamp: string;
+}
+
+export interface CustomerTag {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+}
+
+export interface CRMState {
+  interactions: CustomerInteraction[];
+  tags: CustomerTag[];
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// CARTEIRINHA DIGITAL DO PET
+// ============================================
+
+export interface PetCard {
+  id: string;
+  petId: string;
+  qrCode?: string; // QR Code para acesso rápido
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relationship: string;
+  };
+  medicalNotes?: string;
+  lastCheckup?: string;
+  veterinarian?: {
+    name: string;
+    clinic: string;
+    phone: string;
+  };
+  insurance?: {
+    provider: string;
+    policyNumber: string;
+    validUntil: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================
+// AVALIAÇÕES E NPS
+// ============================================
+
+export type ReviewType = 'service' | 'product' | 'general';
+
+export interface Review {
+  id: string;
+  customerId: string;
+  customerName: string;
+  type: ReviewType;
+  relatedId?: string; // ID do serviço ou produto
+  relatedName?: string;
+  rating: number; // 1-5
+  npsScore?: number; // 0-10
+  comment?: string;
+  wouldRecommend: boolean;
+  tags?: string[]; // 'atendimento', 'qualidade', 'preço', etc.
+  response?: string; // Resposta da loja
+  respondedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewsState {
+  reviews: Review[];
+  selectedReview: Review | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// GROOMING - FOTOS ANTES/DEPOIS
+// ============================================
+
+export interface GroomingPhoto {
+  id: string;
+  serviceOrderId: string;
+  petId: string;
+  petName: string;
+  type: 'before' | 'after';
+  url: string;
+  notes?: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface GroomingPhotosState {
+  photos: GroomingPhoto[];
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// PROGRAMA DE FIDELIDADE
+// ============================================
+
+export type RewardType = 'points' | 'cashback' | 'discount';
+export type LoyaltyTier = 'bronze' | 'silver' | 'gold' | 'platinum';
+
+export interface LoyaltyProgram {
+  id: string;
+  customerId: string;
+  customerName: string;
+  tier: LoyaltyTier;
+  totalPoints: number;
+  availablePoints: number;
+  cashbackBalance: number;
+  lifetimeSpent: number;
+  joinDate: string;
+  lastActivity: string;
+}
+
+export interface PointsTransaction {
+  id: string;
+  customerId: string;
+  type: 'earned' | 'redeemed' | 'expired';
+  points: number;
+  description: string;
+  relatedId?: string; // Sale ou Service ID
+  timestamp: string;
+}
+
+export interface LoyaltyReward {
+  id: string;
+  name: string;
+  description: string;
+  pointsCost: number;
+  active: boolean;
+  stock?: number;
+  createdAt: string;
+}
+
+export interface LoyaltyState {
+  programs: LoyaltyProgram[];
+  transactions: PointsTransaction[];
+  rewards: LoyaltyReward[];
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// E-COMMERCE / CARRINHO
+// ============================================
+
+export interface CartItem {
+  productId: string;
+  productName: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  stock: number;
+}
+
+export interface Cart {
+  id: string;
+  customerId: string;
+  items: CartItem[];
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  total: number;
+  updatedAt: string;
+}
+
+export interface Order {
+  id: string;
+  customerId: string;
+  customerName: string;
+  items: CartItem[];
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  total: number;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentMethod: string;
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  shippingAddress: Address;
+  trackingCode?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CartState {
+  cart: Cart | null;
+  orders: Order[];
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// PAGAMENTOS ONLINE
+// ============================================
+
+export type PaymentMethod = 'pix' | 'credit-card' | 'debit-card' | 'boleto';
+export type PaymentStatus = 'pending' | 'processing' | 'approved' | 'rejected' | 'cancelled';
+
+export interface PaymentLink {
+  id: string;
+  customerId: string;
+  amount: number;
+  description: string;
+  paymentMethod?: PaymentMethod;
+  status: PaymentStatus;
+  link: string;
+  qrCode?: string; // Para PIX
+  expiresAt: string;
+  paidAt?: string;
+  createdAt: string;
+}
+
+export interface PaymentTransaction {
+  id: string;
+  paymentLinkId: string;
+  customerId: string;
+  amount: number;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  transactionId?: string; // ID da gateway
+  authCode?: string;
+  timestamp: string;
+}
+
+export interface PaymentsState {
+  paymentLinks: PaymentLink[];
+  transactions: PaymentTransaction[];
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// ASSINATURAS
+// ============================================
+
+export type SubscriptionStatus = 'active' | 'paused' | 'cancelled' | 'expired';
+export type SubscriptionInterval = 'weekly' | 'biweekly' | 'monthly' | 'bimonthly';
+
+export interface Subscription {
+  id: string;
+  customerId: string;
+  customerName: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  interval: SubscriptionInterval;
+  status: SubscriptionStatus;
+  nextDelivery: string;
+  startDate: string;
+  endDate?: string;
+  paymentMethod: string;
+  shippingAddress: Address;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionDelivery {
+  id: string;
+  subscriptionId: string;
+  deliveryDate: string;
+  status: 'scheduled' | 'shipped' | 'delivered' | 'failed';
+  trackingCode?: string;
+  createdAt: string;
+}
+
+export interface SubscriptionsState {
+  subscriptions: Subscription[];
+  deliveries: SubscriptionDelivery[];
+  selectedSubscription: Subscription | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// COMPRAS E NOTAS DE ENTRADA
+// ============================================
+
+export type PurchaseOrderStatus = 'draft' | 'sent' | 'received' | 'cancelled';
+
+export interface PurchaseOrderItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitCost: number;
+  total: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  orderNumber: string;
+  orderDate: string;
+  expectedDelivery: string;
+  receivedDate?: string;
+  status: PurchaseOrderStatus;
+  items: PurchaseOrderItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  notes?: string;
+  invoiceNumber?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseOrdersState {
+  orders: PurchaseOrder[];
+  selectedOrder: PurchaseOrder | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// INVENTÁRIO E AJUSTES
+// ============================================
+
+export type InventoryCountStatus = 'in-progress' | 'completed' | 'cancelled';
+export type AdjustmentReason = 'count' | 'damage' | 'expiration' | 'theft' | 'return' | 'other';
+
+export interface InventoryCount {
+  id: string;
+  countDate: string;
+  status: InventoryCountStatus;
+  countedBy: string;
+  items: InventoryCountItem[];
+  totalAdjustments: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InventoryCountItem {
+  productId: string;
+  productName: string;
+  expectedQuantity: number;
+  countedQuantity: number;
+  difference: number;
+  adjustmentReason?: AdjustmentReason;
+  notes?: string;
+}
+
+export interface InventoryAdjustment {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  reason: AdjustmentReason;
+  notes?: string;
+  adjustedBy: string;
+  timestamp: string;
+}
+
+export interface InventoryState {
+  counts: InventoryCount[];
+  adjustments: InventoryAdjustment[];
+  selectedCount: InventoryCount | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// COMISSIONAMENTO
+// ============================================
+
+export type CommissionType = 'percentage' | 'fixed';
+export type CommissionTrigger = 'sale' | 'service' | 'both';
+
+export interface CommissionRule {
+  id: string;
+  name: string;
+  description: string;
+  type: CommissionType;
+  value: number; // Percentage or fixed amount
+  trigger: CommissionTrigger;
+  minValue?: number; // Minimum sale/service value to trigger
+  productCategories?: string[]; // Specific categories
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Commission {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  ruleId: string;
+  ruleName: string;
+  relatedType: 'sale' | 'service';
+  relatedId: string;
+  baseValue: number;
+  commissionValue: number;
+  status: 'pending' | 'paid';
+  paidAt?: string;
+  periodStart: string;
+  periodEnd: string;
+  createdAt: string;
+}
+
+export interface CommissionsState {
+  rules: CommissionRule[];
+  commissions: Commission[];
+  selectedRule: CommissionRule | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// HOTEL E CRECHE
+// ============================================
+
+export type HotelServiceType = 'hotel' | 'daycare';
+export type ReservationStatus = 'pending' | 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
+export type RoomSize = 'small' | 'medium' | 'large' | 'suite';
+
+export interface HotelRoom {
+  id: string;
+  number: string;
+  size: RoomSize;
+  capacity: number;
+  dailyRate: number;
+  amenities: string[];
+  active: boolean;
+}
+
+export interface HotelReservation {
+  id: string;
+  customerId: string;
+  customerName: string;
+  petId: string;
+  petName: string;
+  serviceType: HotelServiceType;
+  roomId?: string;
+  roomNumber?: string;
+  checkInDate: string;
+  checkOutDate: string;
+  status: ReservationStatus;
+  dailyRate: number;
+  totalDays: number;
+  totalAmount: number;
+  services: string[]; // Bath, grooming, walks, etc.
+  specialRequests?: string;
+  emergencyContact: {
+    name: string;
+    phone: string;
+  };
+  medicalNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HotelActivity {
+  id: string;
+  reservationId: string;
+  petName: string;
+  activityType: 'meal' | 'medication' | 'walk' | 'play' | 'grooming' | 'vet-visit' | 'photo' | 'note';
+  description: string;
+  time: string;
+  performedBy: string;
+  photos?: string[];
+  timestamp: string;
+}
+
+export interface HotelState {
+  rooms: HotelRoom[];
+  reservations: HotelReservation[];
+  activities: HotelActivity[];
+  selectedReservation: HotelReservation | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// ============================================
 // ORDEM DE SERVIÇO (BANHO/TOSA)
 // ============================================
 

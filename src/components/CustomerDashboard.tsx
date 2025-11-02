@@ -35,11 +35,61 @@ import {
   Brightness7,
   LocalOffer,
   AccountBalance,
+  Home,
+  CreditCard,
+  Star,
+  PhotoLibrary,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
 import { useThemeMode } from '../context/ThemeContext';
-import { typography } from '../theme/typography';
+
+// Categorias do menu do cliente
+const menuCategories = {
+  home: {
+    label: 'Início',
+    icon: <Home />,
+    path: '/customer/dashboard',
+    items: [], // Início não tem submenu
+  },
+  pets: {
+    label: 'Meus Pets',
+    icon: <PetsIcon />,
+    items: [
+      { text: 'Meus Pets', icon: <PetsIcon />, path: '/customer/pets' },
+      { text: 'Carteirinha Digital', icon: <CreditCard />, path: '/customer/pet-card' },
+      { text: 'Vacinação', icon: <MedicalIcon />, path: '/customer/vaccinations' },
+      { text: 'Galeria de Fotos', icon: <PhotoLibrary />, path: '/customer/gallery' },
+    ],
+  },
+  services: {
+    label: 'Serviços',
+    icon: <CalendarIcon />,
+    items: [
+      { text: 'Agendamentos', icon: <CalendarIcon />, path: '/customer/appointments' },
+      { text: 'Hotel & Creche', icon: <Home />, path: '/customer/hotel' },
+      { text: 'Loja Online', icon: <ShoppingCartIcon />, path: '/customer/shop' },
+      { text: 'Assinaturas', icon: <ReceiptIcon />, path: '/customer/subscriptions' },
+      { text: 'Promoções', icon: <LocalOffer />, path: '/customer/promotions' },
+    ],
+  },
+  financial: {
+    label: 'Financeiro',
+    icon: <AccountBalance />,
+    items: [
+      { text: 'Meus Pedidos', icon: <ReceiptIcon />, path: '/customer/orders' },
+      { text: 'Minhas Contas', icon: <AccountBalance />, path: '/customer/accounts' },
+      { text: 'Programa Fidelidade', icon: <Star />, path: '/customer/loyalty' },
+      { text: 'Avaliar Atendimento', icon: <Star />, path: '/customer/reviews' },
+    ],
+  },
+  settings: {
+    label: 'Configurações',
+    icon: <SettingsIcon />,
+    path: '/customer/settings',
+    items: [], // Configurações não tem submenu
+  },
+};
 
 const CustomerDashboard = () => {
   const theme = useTheme();
@@ -48,27 +98,29 @@ const CustomerDashboard = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
   const user = useAppSelector((state) => state.auth.user);
 
-  const [drawerOpen, setDrawerOpen] = useState(!isMobile);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedCategory, setSelectedCategory] = useState<keyof typeof menuCategories>('home');
 
-  const menuItems = [
-    { text: 'Início', icon: <DashboardIcon />, path: '/customer/dashboard' },
-    { text: 'Meus Pets', icon: <PetsIcon />, path: '/customer/pets' },
-    { text: 'Agendamentos', icon: <CalendarIcon />, path: '/customer/appointments' },
-    { text: 'Vacinação', icon: <MedicalIcon />, path: '/customer/vaccinations' },
-    { text: 'Loja', icon: <ShoppingCartIcon />, path: '/customer/shop' },
-    { text: 'Promoções', icon: <LocalOffer />, path: '/customer/promotions' },
-    { text: 'Pedidos', icon: <ReceiptIcon />, path: '/customer/orders' },
-    { text: 'Minhas Contas', icon: <AccountBalance />, path: '/customer/accounts' },
-  ];
-
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
+  // Detectar categoria atual baseado na rota
+  React.useEffect(() => {
+    const path = location.pathname;
+    
+    if (path === '/customer/dashboard') {
+      setSelectedCategory('home');
+    } else if (['/customer/pets', '/customer/vaccinations'].some(p => path.startsWith(p))) {
+      setSelectedCategory('pets');
+    } else if (['/customer/appointments', '/customer/hotel', '/customer/shop', '/customer/subscriptions', '/customer/promotions'].some(p => path.startsWith(p))) {
+      setSelectedCategory('services');
+    } else if (['/customer/orders', '/customer/accounts', '/customer/loyalty', '/customer/reviews'].some(p => path.startsWith(p))) {
+      setSelectedCategory('financial');
+    } else if (path.startsWith('/customer/settings')) {
+      setSelectedCategory('settings');
+    }
+  }, [location.pathname]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -85,13 +137,6 @@ const CustomerDashboard = () => {
     navigate('/login');
   };
 
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    if (isMobile) {
-      setDrawerOpen(false);
-    }
-  };
-
   const handleNotificationsOpen = (event: React.MouseEvent<HTMLElement>) => {
     setNotificationsAnchorEl(event.currentTarget);
   };
@@ -100,7 +145,6 @@ const CustomerDashboard = () => {
     setNotificationsAnchorEl(null);
   };
 
-  // Notificações mockadas
   const mockNotifications = [
     {
       id: 1,
@@ -128,50 +172,46 @@ const CustomerDashboard = () => {
     },
   ];
 
+  const currentItems = ['home', 'settings'].includes(selectedCategory)
+    ? []
+    : menuCategories[selectedCategory].items;
+
   const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
-      {/* User Info */}
-      <Box
-        sx={{
-          p: 3,
-          textAlign: 'center',
-          borderBottom: '2px solid #E47B24',
-          bgcolor: isDark ? '#0E6A6B' : 'linear-gradient(135deg, #0E6A6B 0%, #12888A 100%)',
-        }}
-      >
-        <Avatar
-          sx={{ 
-            bgcolor: '#E47B24', 
-            width: 60, 
-            height: 60, 
-            fontSize: '1.5rem',
-            mx: 'auto',
-            mb: 1,
-          }}
-        >
-          {user?.name?.charAt(0).toUpperCase()}
-        </Avatar>
-        <Typography variant="h6" fontWeight="bold" sx={{ color: '#F8F5EE', mb: 0.5 }}>
-          {user?.name || 'Cliente'}
-        </Typography>
-        <Typography variant="caption" sx={{ color: '#E47B24', fontWeight: 600 }}>
-          Portal do Cliente
-        </Typography>
-      </Box>
+    <Box
+      sx={{
+        width: '100%',
+        pt: 2,
+        bgcolor: isDark ? '#1C2128' : '#F8F5EE',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Categoria Selecionada */}
+      {!['home', 'settings'].includes(selectedCategory) && (
+        <Box sx={{ px: 2, mb: 3 }}>
+          <Typography variant="overline" sx={{ color: isDark ? '#12888A' : '#0E6A6B', fontWeight: 700, display: 'block', mb: 1 }}>
+            {menuCategories[selectedCategory].label}
+          </Typography>
+          <Divider sx={{ borderColor: isDark ? '#12888A' : '#0E6A6B', borderWidth: 2 }} />
+        </Box>
+      )}
 
       {/* Menu Items */}
-      <List sx={{ flex: 1, py: 2 }}>
-        {menuItems.map((item) => {
+      <List sx={{ flex: 1, px: 1.5 }}>
+        {currentItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <ListItem
-              button
-              key={item.text}
-              onClick={() => handleNavigate(item.path)}
+              key={item.path}
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) setDrawerOpen(false);
+              }}
               sx={{
-                mx: 1.5,
                 mb: 0.5,
                 borderRadius: 2,
+                cursor: 'pointer',
                 bgcolor: isActive ? '#E47B24' : 'transparent',
                 color: isActive ? '#F8F5EE' : (isDark ? '#F8F5EE' : '#1E1E1E'),
                 '&:hover': {
@@ -195,34 +235,6 @@ const CustomerDashboard = () => {
           );
         })}
       </List>
-
-      {/* Settings */}
-      <Divider sx={{ borderColor: isDark ? '#12888A' : '#E47B24' }} />
-      <ListItem
-        button
-        onClick={() => handleNavigate('/customer/settings')}
-        sx={{
-          mx: 1.5,
-          my: 1,
-          borderRadius: 2,
-          color: isDark ? '#F8F5EE' : '#1E1E1E',
-          '&:hover': {
-            bgcolor: isDark ? 'rgba(228, 123, 36, 0.15)' : 'rgba(228, 123, 36, 0.1)',
-          },
-        }}
-      >
-        <ListItemIcon sx={{ color: '#E47B24', minWidth: 40 }}>
-          <SettingsIcon />
-        </ListItemIcon>
-        <ListItemText
-          primary="Configurações"
-          primaryTypographyProps={{
-            fontWeight: 500,
-            fontSize: '0.95rem',
-            color: isDark ? '#F8F5EE' : '#1E1E1E',
-          }}
-        />
-      </ListItem>
     </Box>
   );
 
@@ -239,18 +251,8 @@ const CustomerDashboard = () => {
         }}
       >
         <Toolbar>
-          {/* Menu Toggle */}
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-
           {/* Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 3 }}>
             <PetsIcon sx={{ fontSize: { xs: 28, md: 32 }, color: '#E47B24' }} />
             <Typography 
               variant="h6" 
@@ -263,6 +265,53 @@ const CustomerDashboard = () => {
               SuperPet
             </Typography>
           </Box>
+
+          {/* Menu de Categorias (Desktop) */}
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
+              {Object.entries(menuCategories).map(([key, category]) => (
+                <Button
+                  key={key}
+                  startIcon={category.icon}
+                  onClick={() => {
+                    setSelectedCategory(key as any);
+                    if (['home', 'settings'].includes(key)) {
+                      navigate((category as any).path);
+                    } else if (category.items.length > 0) {
+                      navigate(category.items[0].path);
+                    }
+                  }}
+                  sx={{
+                    color: selectedCategory === key ? '#E47B24' : '#F8F5EE',
+                    bgcolor: selectedCategory === key ? 'rgba(228, 123, 36, 0.2)' : 'transparent',
+                    fontWeight: selectedCategory === key ? 700 : 500,
+                    fontSize: { xs: '0.75rem', md: '0.85rem' },
+                    px: { xs: 1, md: 2 },
+                    minWidth: 'auto',
+                    '&:hover': {
+                      bgcolor: 'rgba(248, 245, 238, 0.1)',
+                    },
+                  }}
+                >
+                  {!isMobile && category.label}
+                </Button>
+              ))}
+            </Box>
+          )}
+
+          {/* Menu Mobile Toggle */}
+          {isMobile && (
+            <>
+              <Box sx={{ flexGrow: 1 }} />
+              <IconButton
+                color="inherit"
+                onClick={() => setDrawerOpen(!drawerOpen)}
+                sx={{ mr: 1 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            </>
+          )}
 
           {/* Tema Toggle */}
           <IconButton color="inherit" onClick={toggleTheme} sx={{ mr: { xs: 0.5, md: 1 } }}>
@@ -291,6 +340,7 @@ const CustomerDashboard = () => {
             </Avatar>
           </IconButton>
           
+          {/* User Menu Dropdown */}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -315,7 +365,7 @@ const CustomerDashboard = () => {
             </Box>
             <Divider sx={{ borderColor: isDark ? '#12888A' : '#0E6A6B' }} />
             <MenuItem 
-              onClick={() => { handleMenuClose(); handleNavigate('/customer/settings'); }}
+              onClick={() => { handleMenuClose(); navigate('/customer/settings'); }}
               sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E' }}
             >
               <ListItemIcon>
@@ -456,47 +506,140 @@ const CustomerDashboard = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Drawer */}
-      <Drawer
-        variant={isMobile ? 'temporary' : 'permanent'}
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true,
-        }}
-        sx={{
-          width: 260,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 260,
-            boxSizing: 'border-box',
-            borderRight: '2px solid #E47B24',
-            bgcolor: isDark ? '#1C2128' : '#F8F5EE',
-            mt: '64px',
-            height: 'calc(100% - 64px)',
-          },
-        }}
-      >
-        {drawer}
-      </Drawer>
+      <Box sx={{ display: 'flex', mt: '64px', width: '100%' }}>
+        {/* Sidebar Desktop */}
+        {!isMobile && !['home', 'settings'].includes(selectedCategory) && (
+          <Drawer
+            variant="permanent"
+            sx={{
+              width: 240,
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: 240,
+                boxSizing: 'border-box',
+                bgcolor: isDark ? '#1C2128' : '#F8F5EE',
+                borderRight: isDark ? '2px solid #12888A' : '2px solid #0E6A6B',
+                top: '64px',
+                height: 'calc(100% - 64px)',
+              },
+            }}
+          >
+            {drawer}
+          </Drawer>
+        )}
 
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: { xs: 2, sm: 3, md: 4 },
-          mt: 8,
-          width: { xs: '100%', md: `calc(100% - 260px)` },
-        }}
-      >
-        <Outlet />
+        {/* Sidebar Mobile */}
+        {isMobile && (
+          <Drawer
+            variant="temporary"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              '& .MuiDrawer-paper': {
+                width: 260,
+                bgcolor: isDark ? '#1C2128' : '#F8F5EE',
+                borderRight: isDark ? '2px solid #12888A' : '2px solid #0E6A6B',
+                top: '64px',
+                height: 'calc(100% - 64px)',
+              },
+            }}
+          >
+            {/* Menu Categorias Mobile */}
+            <Box sx={{ p: 2 }}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  mb: 2,
+                  pb: 2,
+                  borderBottom: `2px solid ${isDark ? '#12888A' : '#E47B24'}`,
+                }}
+              >
+                <Avatar
+                  sx={{ 
+                    bgcolor: '#E47B24', 
+                    width: 60, 
+                    height: 60, 
+                    fontSize: '1.5rem',
+                    mx: 'auto',
+                    mb: 1,
+                  }}
+                >
+                  {user?.name?.charAt(0).toUpperCase()}
+                </Avatar>
+                <Typography variant="h6" fontWeight="bold" sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>
+                  {user?.name || 'Cliente'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#E47B24', fontWeight: 600 }}>
+                  Portal do Cliente
+                </Typography>
+              </Box>
+
+              <Typography variant="overline" sx={{ color: isDark ? '#12888A' : '#0E6A6B', fontWeight: 700 }}>
+                Categorias
+              </Typography>
+              <List sx={{ p: 0, mt: 1 }}>
+                {Object.entries(menuCategories).map(([key, category]) => (
+                  <ListItem
+                    key={key}
+                    onClick={() => {
+                      setSelectedCategory(key as any);
+                      if (['home', 'settings'].includes(key)) {
+                        navigate((category as any).path);
+                        setDrawerOpen(false);
+                      }
+                    }}
+                    sx={{
+                      mb: 0.5,
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      bgcolor: selectedCategory === key ? '#E47B24' : 'transparent',
+                      color: selectedCategory === key ? '#F8F5EE' : (isDark ? '#F8F5EE' : '#1E1E1E'),
+                      '&:hover': {
+                        bgcolor: selectedCategory === key ? '#C26619' : 'rgba(228, 123, 36, 0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: selectedCategory === key ? '#F8F5EE' : '#E47B24', minWidth: 36 }}>
+                      {category.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={category.label}
+                      primaryTypographyProps={{
+                        fontWeight: selectedCategory === key ? 600 : 500,
+                        fontSize: '0.9rem',
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+
+            <Divider sx={{ borderColor: isDark ? '#12888A' : '#E47B24', borderWidth: 2, mx: 2 }} />
+
+            {/* Submenu Mobile */}
+            {drawer}
+          </Drawer>
+        )}
+
+        {/* Main Content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: { xs: 2, sm: 3, md: 4 },
+            width: { 
+              xs: '100%', 
+              md: ['home', 'settings'].includes(selectedCategory) ? '100%' : 'calc(100% - 240px)' 
+            },
+          }}
+        >
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );
 };
 
 export default CustomerDashboard;
-
-
 

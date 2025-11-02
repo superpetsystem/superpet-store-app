@@ -1,69 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Grid,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  IconButton,
-  CircularProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Tabs,
-  Tab,
-  Card,
-  CardContent,
-} from '@mui/material';
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Inventory as InventoryIcon,
-} from '@mui/icons-material';
+import { Box, Typography, Button, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Alert, Tabs, Tab } from '@mui/material';
+import { Add, Warning, TrendingDown, Inventory } from '@mui/icons-material';
+import { useThemeMode } from '../../../context/ThemeContext';
+import { typography } from '../../../theme/typography';
 import { useStock } from '../hooks/useStock';
 import { useProducts } from '../../products/hooks/useProducts';
-import { StockMovement } from '../../../types';
 import StockMovementDialog from './StockMovementDialog';
-import { useThemeMode } from '../../../context/ThemeContext';
-import {
-  formatMovementType,
-  formatDateTime,
-  formatQuantityWithSign,
-  getMovementTypeColor,
-  getMovementTypeIcon,
-} from '../helpers/formatters';
-import { typography } from '../../../theme/typography';
+import { formatMovementType, formatQuantityWithSign, getMovementTypeColor } from '../helpers/formatters';
 
 const StockPage = () => {
   const { isDark } = useThemeMode();
-  const {
-    movements,
-    loading,
-    error,
-    fetchMovements,
-    deleteMovement,
-    fetchMovementStats,
-    clearError,
-  } = useStock();
-
+  const { movements, loading, fetchMovements, fetchMovementStats } = useStock();
   const { products, fetchProducts } = useProducts();
-
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [movementToDelete, setMovementToDelete] = useState<StockMovement | null>(null);
   const [stats, setStats] = useState<any>(null);
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [tab, setTab] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -76,287 +27,149 @@ const StockPage = () => {
     setStats(statsData);
   };
 
-  const handleAddNew = () => {
-    setDialogOpen(true);
-  };
-
-  const handleDeleteClick = (movement: StockMovement) => {
-    setMovementToDelete(movement);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (movementToDelete) {
-      await deleteMovement(movementToDelete.id);
-      setDeleteDialogOpen(false);
-      setMovementToDelete(null);
-      loadData();
-    }
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-  };
-
-  const handleSaveSuccess = () => {
-    loadData();
-  };
-
-  const handleTabChange = (_: any, newValue: number) => {
-    setSelectedTab(newValue);
-    if (newValue === 0) {
-      fetchMovements({ page: 1, limit: 1000 });
-    } else {
-      const types = ['entry', 'exit', 'adjustment', 'return', 'loss'];
-      fetchMovements({ page: 1, limit: 1000, type: types[newValue - 1] });
-    }
-  };
-
-  const getProductName = (productId: string) => {
-    const product = products.find((p) => p.id === productId);
-    return product ? product.name : 'Produto não encontrado';
-  };
-
-  const getProductSKU = (productId: string) => {
-    const product = products.find((p) => p.id === productId);
-    return product ? product.sku : '-';
-  };
+  // Alertas de estoque
+  const lowStock = products.filter(p => p.stock <= p.minStock && p.stock > 0);
+  const outOfStock = products.filter(p => p.stock === 0);
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 1, fontSize: typography.pageTitle }}>
-            Controle de Estoque
-          </Typography>
-          <Typography variant="body1" sx={{ color: isDark ? '#E6E1D6' : '#666', fontSize: typography.pageSubtitle }}>
-            Registre e acompanhe movimentações de estoque
-          </Typography>
-        </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h4" fontWeight="bold" sx={{ color: isDark ? '#12888A' : '#0E6A6B', ...typography.h4 }}>
+          📦 Controle de Estoque
+        </Typography>
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddNew}
-          sx={{
-            bgcolor: '#E47B24',
-            color: '#F8F5EE',
-            '&:hover': { bgcolor: '#C26619' },
-            fontWeight: 'bold',
-            fontSize: typography.buttonText,
-          }}
+          startIcon={<Add />}
+          onClick={() => setDialogOpen(true)}
+          sx={{ bgcolor: '#E47B24', '&:hover': { bgcolor: '#C26619' } }}
         >
           Nova Movimentação
         </Button>
       </Box>
 
-      {/* Stats */}
-      {stats && (
-        <Grid container spacing={2} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                p: 2,
-                bgcolor: '#E8F5E9',
-                borderLeft: '4px solid #4CAF50',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ color: '#4CAF50' }}>
-                    {stats.totalEntry}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#666' }}>
-                    Total de Entradas
-                  </Typography>
-                </Box>
-                <TrendingUpIcon sx={{ fontSize: 48, color: '#4CAF50', opacity: 0.3 }} />
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                p: 2,
-                bgcolor: '#E3F2FD',
-                borderLeft: '4px solid #2196F3',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ color: '#2196F3' }}>
-                    {stats.totalExit}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#666' }}>
-                    Total de Saídas
-                  </Typography>
-                </Box>
-                <TrendingDownIcon sx={{ fontSize: 48, color: '#2196F3', opacity: 0.3 }} />
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                p: 2,
-                bgcolor: '#FFEBEE',
-                borderLeft: '4px solid #F44336',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ color: '#F44336' }}>
-                    {stats.totalLoss}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#666' }}>
-                    Total de Perdas
-                  </Typography>
-                </Box>
-                <InventoryIcon sx={{ fontSize: 48, color: '#F44336', opacity: 0.3 }} />
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                p: 2,
-                bgcolor: '#F8F5EE',
-                borderLeft: '4px solid #0E6A6B',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ color: '#0E6A6B' }}>
-                    {stats.total}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#666' }}>
-                    Total de Movimentações
-                  </Typography>
-                </Box>
-                <InventoryIcon sx={{ fontSize: 48, color: '#0E6A6B', opacity: 0.3 }} />
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+      {/* Alertas */}
+      {outOfStock.length > 0 && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          ⚠️ <strong>{outOfStock.length} produtos</strong> estão sem estoque!
+        </Alert>
       )}
-
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={clearError}>
-          {error}
+      {lowStock.length > 0 && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          ⚠️ <strong>{lowStock.length} produtos</strong> estão com estoque baixo!
         </Alert>
       )}
 
-      {/* Tabs */}
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={selectedTab} onChange={handleTabChange} variant="scrollable">
-          <Tab label="Todas" />
-          <Tab label="📦 Entradas" />
-          <Tab label="📤 Saídas" />
-          <Tab label="⚙️ Ajustes" />
-          <Tab label="↩️ Devoluções" />
-          <Tab label="❌ Perdas" />
-        </Tabs>
-      </Paper>
-
-      {/* Loading */}
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
+      {/* Stats */}
+      {stats && (
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          {[
+            { label: 'Entradas', value: stats.entries, color: '#4CAF50', icon: <TrendingDown sx={{ transform: 'rotate(180deg)' }} /> },
+            { label: 'Saídas', value: stats.exits, color: '#F44336', icon: <TrendingDown /> },
+            { label: 'Produtos Ativos', value: products.filter(p => p.active).length, color: '#2196F3', icon: <Inventory /> },
+            { label: 'Estoque Baixo', value: lowStock.length, color: '#FF9800', icon: <Warning /> },
+          ].map((stat, idx) => (
+            <Grid item xs={12} sm={6} md={3} key={idx}>
+              <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', borderLeft: `4px solid ${stat.color}` }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Box sx={{ bgcolor: stat.color, borderRadius: '50%', p: 1, mr: 2 }}>
+                      {React.cloneElement(stat.icon, { sx: { color: '#FFF' } })}
+                    </Box>
+                    <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
+                    {stat.label}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
 
-      {/* Movements Table */}
-      {!loading && (
-        <>
-          {movements.length === 0 ? (
-            <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#F8F5EE' }}>
-              <InventoryIcon sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Nenhuma movimentação encontrada
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Comece registrando sua primeira movimentação de estoque
-              </Typography>
-              <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddNew}>
-                Registrar Movimentação
-              </Button>
-            </Paper>
-          ) : (
-            <TableContainer component={Paper}>
+      <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: isDark ? '#12888A' : '#E0E0E0' }}>
+          <Tab label="Movimentações" sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }} />
+          <Tab label={`Estoque Baixo (${lowStock.length})`} sx={{ color: '#FF9800' }} />
+          <Tab label={`Sem Estoque (${outOfStock.length})`} sx={{ color: '#F44336' }} />
+        </Tabs>
+
+        <CardContent>
+          {tab === 0 && (
+            <TableContainer component={Paper} sx={{ bgcolor: isDark ? '#0D1117' : '#FFFFFF' }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: '#F8F5EE' }}>
-                    <TableCell><strong>Data/Hora</strong></TableCell>
-                    <TableCell><strong>Produto</strong></TableCell>
-                    <TableCell><strong>Tipo</strong></TableCell>
-                    <TableCell align="right"><strong>Quantidade</strong></TableCell>
-                    <TableCell><strong>Motivo</strong></TableCell>
-                    <TableCell><strong>Observações</strong></TableCell>
-                    <TableCell align="center"><strong>Ações</strong></TableCell>
+                  <TableRow sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Data/Hora</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Produto</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Tipo</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Qtd</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Usuário</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {movements.map((movement) => (
-                    <TableRow key={movement.id} hover>
+                  {movements.slice(0, 50).map(mov => (
+                    <TableRow key={mov.id} hover>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{new Date(mov.timestamp).toLocaleString()}</TableCell>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{mov.productName}</TableCell>
                       <TableCell>
-                        <Typography variant="body2">
-                          {formatDateTime(movement.createdAt)}
-                        </Typography>
+                        <Chip label={formatMovementType(mov.type)} size="small" sx={{ bgcolor: getMovementTypeColor(mov.type), color: '#FFF' }} />
                       </TableCell>
+                      <TableCell sx={{ color: mov.type === 'entry' ? '#4CAF50' : '#F44336', fontWeight: 600 }}>
+                        {formatQuantityWithSign(mov.quantity, mov.type)}
+                      </TableCell>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{mov.userId}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {tab === 1 && (
+            <TableContainer component={Paper} sx={{ bgcolor: isDark ? '#0D1117' : '#FFFFFF' }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Produto</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Estoque Atual</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Estoque Mínimo</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Diferença</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {lowStock.map(p => (
+                    <TableRow key={p.id} hover>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{p.name}</TableCell>
+                      <TableCell sx={{ color: '#FF9800', fontWeight: 600 }}>{p.stock}</TableCell>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{p.minStock}</TableCell>
+                      <TableCell sx={{ color: '#F44336', fontWeight: 600 }}>-{p.minStock - p.stock}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {tab === 2 && (
+            <TableContainer component={Paper} sx={{ bgcolor: isDark ? '#0D1117' : '#FFFFFF' }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Produto</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Categoria</TableCell>
+                    <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>Ação Necessária</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {outOfStock.map(p => (
+                    <TableRow key={p.id} hover>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{p.name}</TableCell>
+                      <TableCell sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B' }}>{p.category}</TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={500}>
-                          {getProductName(movement.productId)}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          SKU: {getProductSKU(movement.productId)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={formatMovementType(movement.type)}
-                          size="small"
-                          sx={{
-                            bgcolor: getMovementTypeColor(movement.type),
-                            color: 'white',
-                            fontWeight: 500,
-                          }}
-                          icon={<span>{getMovementTypeIcon(movement.type)}</span>}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography
-                          variant="body2"
-                          fontWeight="bold"
-                          sx={{
-                            color:
-                              movement.type === 'entry' || movement.type === 'return'
-                                ? '#4CAF50'
-                                : '#F44336',
-                          }}
-                        >
-                          {formatQuantityWithSign(movement.quantity, movement.type)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{movement.reason}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption" color="text.secondary">
-                          {movement.notes || '-'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteClick(movement)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
+                        <Chip label="REABASTECER URGENTE" size="small" sx={{ bgcolor: '#F44336', color: '#FFF', fontWeight: 600 }} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -364,34 +177,14 @@ const StockPage = () => {
               </Table>
             </TableContainer>
           )}
-        </>
-      )}
+        </CardContent>
+      </Card>
 
-      {/* Movement Dialog */}
       <StockMovementDialog
         open={dialogOpen}
-        onClose={handleDialogClose}
-        onSave={handleSaveSuccess}
+        onClose={() => setDialogOpen(false)}
+        onSuccess={loadData}
       />
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Tem certeza que deseja excluir esta movimentação?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Esta ação não pode ser desfeita e pode afetar o estoque do produto.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

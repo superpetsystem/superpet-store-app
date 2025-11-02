@@ -31,10 +31,10 @@ const CustomerDashboardPage = () => {
 
   // Dados mockados para demonstração
   const stats = [
-    { label: 'Meus Pets', value: '3', icon: <PetsIcon />, color: '#E47B24' },
-    { label: 'Próximos Agendamentos', value: '2', icon: <CalendarIcon />, color: '#0E6A6B' },
-    { label: 'Vacinas Pendentes', value: '1', icon: <MedicalIcon />, color: '#D32F2F' },
-    { label: 'Pontos de Fidelidade', value: '450', icon: <TrendingUpIcon />, color: '#2E7D32' },
+    { label: 'Meus Pets', value: '3', icon: <PetsIcon />, color: '#E47B24', path: '/customer/pets' },
+    { label: 'Próximos Agendamentos', value: '2', icon: <CalendarIcon />, color: '#0E6A6B', path: '/customer/appointments' },
+    { label: 'Vacinas Pendentes', value: '1', icon: <MedicalIcon />, color: '#D32F2F', path: '/customer/vaccinations' },
+    { label: 'Pontos de Fidelidade', value: '450', icon: <TrendingUpIcon />, color: '#2E7D32', path: '/customer/loyalty' },
   ];
 
   const upcomingAppointments = [
@@ -97,11 +97,13 @@ const CustomerDashboardPage = () => {
         {stats.map((stat) => (
           <Grid item xs={12} sm={6} md={3} key={stat.label}>
             <Card
+              onClick={() => navigate(stat.path)}
               sx={{
                 bgcolor: isDark ? '#1C2128' : '#F8F5EE',
                 border: isDark ? `1px solid ${stat.color}` : 'none',
                 borderLeft: `4px solid ${stat.color}`,
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: 4,
@@ -143,6 +145,7 @@ const CustomerDashboardPage = () => {
               <Button
                 variant="contained"
                 size="small"
+                onClick={() => navigate('/customer/appointments')}
                 sx={{
                   bgcolor: '#E47B24',
                   color: '#F8F5EE',
@@ -209,6 +212,7 @@ const CustomerDashboardPage = () => {
                 <Typography sx={{ color: isDark ? '#E6E1D6' : '#999' }}>Nenhum agendamento próximo</Typography>
                 <Button
                   variant="contained"
+                  onClick={() => navigate('/customer/appointments')}
                   sx={{
                     mt: 2,
                     bgcolor: '#E47B24',
@@ -285,6 +289,7 @@ const CustomerDashboardPage = () => {
                   fullWidth
                   variant="contained"
                   startIcon={<CalendarIcon />}
+                  onClick={() => navigate('/customer/appointments')}
                   sx={{
                     bgcolor: '#0E6A6B',
                     color: '#F8F5EE',
@@ -300,6 +305,7 @@ const CustomerDashboardPage = () => {
                   fullWidth
                   variant="contained"
                   startIcon={<ShoppingCartIcon />}
+                  onClick={() => navigate('/customer/shop')}
                   sx={{
                     bgcolor: '#E47B24',
                     color: '#F8F5EE',
@@ -315,6 +321,7 @@ const CustomerDashboardPage = () => {
                   fullWidth
                   variant="contained"
                   startIcon={<PetsIcon />}
+                  onClick={() => navigate('/customer/pets')}
                   sx={{
                     bgcolor: '#2E7D32',
                     color: '#F8F5EE',
@@ -330,6 +337,7 @@ const CustomerDashboardPage = () => {
                   fullWidth
                   variant="contained"
                   startIcon={<MedicalIcon />}
+                  onClick={() => navigate('/customer/vaccinations')}
                   sx={{
                     bgcolor: '#D32F2F',
                     color: '#F8F5EE',
