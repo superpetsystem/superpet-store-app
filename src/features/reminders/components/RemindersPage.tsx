@@ -9,11 +9,13 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemAvatar,
-  Avatar,
   Chip,
-  Tab,
-  Tabs,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -21,230 +23,224 @@ import {
   CheckCircle,
   Schedule,
   Error,
-  Email,
-  Sms,
-  WhatsApp,
+  Send,
 } from '@mui/icons-material';
 import { useThemeMode } from '../../../context/ThemeContext';
 import { typography } from '../../../theme/typography';
 import { remindersApi } from '../api/remindersApi';
-import { Reminder, ReminderTemplate, ReminderStatus } from '../../../types';
+import { Reminder } from '../../../types';
+import { customersApi } from '../../customers/api/customersApi';
 
 const RemindersPage = () => {
   const { isDark } = useThemeMode();
-  const [tabValue, setTabValue] = useState(0);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [templates, setTemplates] = useState<ReminderTemplate[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [dialog, setDialog] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    customerId: '',
+    type: 'vaccination' as 'vaccination' | 'appointment' | 'birthday' | 'general',
+    channel: 'whatsapp' as 'email' | 'sms' | 'whatsapp' | 'push',
+    message: '',
+    scheduledFor: new Date().toISOString().split('T')[0],
+  });
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    setLoading(true);
-    const [remindersRes, templatesRes] = await Promise.all([
+    const [remRes, custRes] = await Promise.all([
       remindersApi.getAll(),
-      remindersApi.templates.getAll(),
+      customersApi.getCustomers({ page: 1, limit: 1000 }),
     ]);
-
-    if (remindersRes.success && remindersRes.data) setReminders(remindersRes.data);
-    if (templatesRes.success && templatesRes.data) setTemplates(templatesRes.data);
-    setLoading(false);
+    if (remRes.success && remRes.data) setReminders(remRes.data);
+    if (custRes.success && custRes.data) setCustomers(custRes.data.items);
   };
 
-  const getStatusColor = (status: ReminderStatus) => {
-    const colors = {
-      pending: '#FF9800',
-      sent: '#4CAF50',
-      failed: '#F44336',
-      cancelled: '#757575',
-    };
-    return colors[status];
+  const handleCreate = async () => {
+    const customer = customers.find(c => c.id === formData.customerId);
+    if (!customer) return;
+
+    const res = await remindersApi.create({
+      ...formData,
+      customerName: customer.name,
+      petId: '',
+      petName: '',
+      status: 'pending',
+    });
+
+    if (res.success) {
+      setDialog(false);
+      setFormData({ customerId: '', type: 'vaccination', channel: 'whatsapp', message: '', scheduledFor: new Date().toISOString().split('T')[0] });
+      loadData();
+      alert('✅ Lembrete agendado!');
+    }
   };
 
-  const getChannelIcon = (channel: string) => {
-    const icons = {
-      email: <Email />,
-      sms: <Sms />,
-      whatsapp: <WhatsApp />,
-      push: <Notifications />,
-    };
-    return icons[channel as keyof typeof icons] || <Notifications />;
+  const handleSend = async (id: string) => {
+    const res = await remindersApi.send(id);
+    if (res.success) {
+      loadData();
+      alert('✅ Lembrete enviado!');
+    }
   };
 
-  const stats = {
-    total: reminders.length,
-    pending: reminders.filter(r => r.status === 'pending').length,
-    sent: reminders.filter(r => r.status === 'sent').length,
-    failed: reminders.filter(r => r.status === 'failed').length,
+  const getStatusColor = (status: string) => {
+    const colors = { pending: '#FF9800', sent: '#4CAF50', failed: '#F44336', cancelled: '#757575' };
+    return colors[status as keyof typeof colors];
   };
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 0.5, ...typography.h4 }}
-          >
+          <Typography variant="h4" fontWeight="bold" sx={{ color: isDark ? '#12888A' : '#0E6A6B', ...typography.h4 }}>
             📲 Lembretes e Notificações
           </Typography>
           <Typography variant="body1" sx={{ color: isDark ? '#E6E1D6' : '#666', ...typography.body1 }}>
-            Envie lembretes automáticos aos clientes
+            Envie lembretes automáticos
           </Typography>
         </Box>
-
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          sx={{
-            bgcolor: '#E47B24',
-            color: '#F8F5EE',
-            fontWeight: 600,
-            '&:hover': { bgcolor: '#C26619' },
-          }}
+          onClick={() => setDialog(true)}
+          sx={{ bgcolor: '#E47B24', '&:hover': { bgcolor: '#C26619' } }}
         >
           Novo Lembrete
         </Button>
       </Box>
 
-      {/* Stats */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {[
-          { label: 'Total', value: stats.total, color: '#0E6A6B', icon: <Notifications /> },
-          { label: 'Pendentes', value: stats.pending, color: '#FF9800', icon: <Schedule /> },
-          { label: 'Enviados', value: stats.sent, color: '#4CAF50', icon: <CheckCircle /> },
-          { label: 'Falharam', value: stats.failed, color: '#F44336', icon: <Error /> },
-        ].map((stat, idx) => (
-          <Grid item xs={12} sm={6} md={3} key={idx}>
-            <Card sx={{
-              bgcolor: isDark ? '#1C2128' : '#F8F5EE',
-              border: isDark ? `1px solid ${stat.color}` : 'none',
-              borderLeft: `4px solid ${stat.color}`,
-            }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Avatar sx={{ bgcolor: stat.color, mr: 2, width: 40, height: 40 }}>
-                    {stat.icon}
-                  </Avatar>
-                  <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>
-                    {stat.value}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
-                  {stat.label}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Tabs */}
-      <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', border: isDark ? '1px solid #12888A' : 'none' }}>
-        <Tabs
-          value={tabValue}
-          onChange={(_, v) => setTabValue(v)}
-          sx={{
-            borderBottom: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
-            '& .MuiTab-root': {
-              color: isDark ? '#E6E1D6' : '#666',
-              '&.Mui-selected': { color: '#E47B24' },
-            },
-            '& .MuiTabs-indicator': { bgcolor: '#E47B24' },
-          }}
-        >
-          <Tab label="Lembretes" />
-          <Tab label="Templates" />
-        </Tabs>
-
+      <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
         <CardContent>
-          {/* Tab 1: Lembretes */}
-          {tabValue === 0 && (
-            <List sx={{ p: 0 }}>
-              {reminders.map((reminder, index) => (
-                <ListItem
-                  key={reminder.id}
-                  sx={{
-                    bgcolor: isDark ? '#0D1117' : '#FFFFFF',
-                    borderRadius: 2,
-                    mb: index < reminders.length - 1 ? 2 : 0,
-                    border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
-                    '&:hover': { borderColor: '#E47B24' },
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: getStatusColor(reminder.status) }}>
-                      {getChannelIcon(reminder.channel)}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography variant="h6" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E', fontWeight: 600 }}>
-                          {reminder.title}
-                        </Typography>
-                        <Chip
-                          label={reminder.status}
-                          size="small"
-                          sx={{ bgcolor: getStatusColor(reminder.status), color: '#FFF' }}
-                        />
-                      </Box>
-                    }
-                    secondary={
-                      <>
-                        <Typography component="span" variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666', display: 'block' }}>
-                          👤 {reminder.customerName} {reminder.petName && `• 🐾 ${reminder.petName}`}
-                        </Typography>
-                        <Typography component="span" variant="caption" sx={{ color: isDark ? '#12888A' : '#999', display: 'block' }}>
-                          📅 {new Date(reminder.scheduledDate).toLocaleDateString('pt-BR')} às {reminder.scheduledTime} • {reminder.channel.toUpperCase()}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-
-          {/* Tab 2: Templates */}
-          {tabValue === 1 && (
-            <List sx={{ p: 0 }}>
-              {templates.map((template, index) => (
-                <ListItem
-                  key={template.id}
-                  sx={{
-                    bgcolor: isDark ? '#0D1117' : '#FFFFFF',
-                    borderRadius: 2,
-                    mb: index < templates.length - 1 ? 2 : 0,
-                    border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: '#2196F3' }}>
-                      {getChannelIcon(template.channel)}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={<Typography variant="h6" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E' }}>{template.name}</Typography>}
-                    secondary={
-                      <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
-                        {template.message.substring(0, 100)}...
+          <List sx={{ p: 0 }}>
+            {reminders.map((reminder, index) => (
+              <ListItem
+                key={reminder.id}
+                sx={{
+                  bgcolor: isDark ? '#0D1117' : '#FFFFFF',
+                  borderRadius: 2,
+                  mb: index < reminders.length - 1 ? 2 : 0,
+                  border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
+                }}
+                secondaryAction={
+                  reminder.status === 'pending' && (
+                    <Button size="small" startIcon={<Send />} onClick={() => handleSend(reminder.id)} sx={{ color: '#4CAF50' }}>
+                      Enviar Agora
+                    </Button>
+                  )
+                }
+              >
+                <ListItemText
+                  primary={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="h6" sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>
+                        {reminder.customerName}
                       </Typography>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
+                      <Chip label={reminder.status} size="small" sx={{ bgcolor: getStatusColor(reminder.status), color: '#FFF' }} />
+                      <Chip label={reminder.channel} size="small" sx={{ bgcolor: '#2196F3', color: '#FFF' }} />
+                    </Box>
+                  }
+                  secondary={
+                    <Typography sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
+                      {reminder.message}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
         </CardContent>
       </Card>
+
+      {/* Create Dialog */}
+      <Dialog open={dialog} onClose={() => setDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', color: isDark ? '#F8F5EE' : '#0E6A6B' }}>
+          📲 Novo Lembrete
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                select
+                fullWidth
+                label="Cliente"
+                value={formData.customerId}
+                onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                  '& .MuiSelect-select': { color: isDark ? '#F8F5EE' : '#1E1E1E' },
+                }}
+              >
+                {(customers || []).map(c => (
+                  <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Tipo"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                  '& .MuiSelect-select': { color: isDark ? '#F8F5EE' : '#1E1E1E' },
+                }}
+              >
+                <MenuItem value="vaccination">💉 Vacinação</MenuItem>
+                <MenuItem value="appointment">📅 Agendamento</MenuItem>
+                <MenuItem value="birthday">🎂 Aniversário</MenuItem>
+                <MenuItem value="general">📝 Geral</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Canal"
+                value={formData.channel}
+                onChange={(e) => setFormData({ ...formData, channel: e.target.value as any })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                  '& .MuiSelect-select': { color: isDark ? '#F8F5EE' : '#1E1E1E' },
+                }}
+              >
+                <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                <MenuItem value="sms">SMS</MenuItem>
+                <MenuItem value="email">Email</MenuItem>
+                <MenuItem value="push">Push</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Mensagem"
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& textarea': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+          <Button onClick={() => setDialog(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleCreate} disabled={!formData.customerId || !formData.message} sx={{ bgcolor: '#E47B24', '&:hover': { bgcolor: '#C26619' } }}>
+            Agendar Lembrete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
 export default RemindersPage;
-

@@ -89,6 +89,27 @@ let mockPets: Pet[] = [
     createdAt: '2024-03-05T09:20:00Z',
     updatedAt: '2024-03-05T09:20:00Z',
   },
+  // Mais pets para customer ID 2 (Maria Santos)
+  {
+    id: '5',
+    customerId: '2',
+    name: 'Nina',
+    species: 'cat',
+    breed: 'Siamês',
+    gender: 'female',
+    birthDate: '2021-06-15',
+    age: 3,
+    weight: 3.5,
+    size: 'small',
+    color: 'Marrom claro e creme',
+    neutered: true,
+    allergies: [],
+    medications: [],
+    photo: '',
+    notes: 'Muito carinhosa, adora colo',
+    createdAt: '2024-03-10T11:00:00Z',
+    updatedAt: '2024-03-10T11:00:00Z',
+  },
 ];
 
 export const petsApi = {

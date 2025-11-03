@@ -6,11 +6,9 @@ import {
   Drawer,
   List,
   ListItem,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
   Box,
-  Container,
   useMediaQuery,
   useTheme,
   IconButton,
@@ -33,11 +31,7 @@ import {
   Settings,
   Inventory,
   ContentCut,
-  ChevronLeft,
-  ChevronRight,
-  ViewSidebar,
   Logout,
-  Person,
   Brightness4,
   Brightness7,
   Menu as MenuIcon,
@@ -47,9 +41,79 @@ import {
   CalendarMonth,
   Vaccines,
   Assessment,
+  Business,
+  Group,
+  AccountBalance,
+  LocalOffer,
+  Announcement,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
+
+// Definição das categorias e seus submenus
+const menuCategories = {
+  dashboard: {
+    label: 'Dashboard',
+    icon: <DashboardIcon />,
+    path: '/dashboard',
+    items: [], // Dashboard não tem submenu
+  },
+  sales: {
+    label: 'Vendas',
+    icon: <Store />,
+    items: [
+      { text: 'PDV / Caixa', icon: <Store />, path: '/vendas' },
+      { text: 'Pedidos Online', icon: <ShoppingCart />, path: '/pedidos-online' },
+      { text: 'Produtos', icon: <ShoppingCart />, path: '/produtos' },
+      { text: 'Catálogo de Serviços', icon: <Assessment />, path: '/catalogo-servicos' },
+      { text: 'Preços e Promoções', icon: <LocalOffer />, path: '/promocoes' },
+      { text: 'Programa Fidelidade', icon: <Assessment />, path: '/fidelidade' },
+      { text: 'Assinaturas', icon: <Assessment />, path: '/assinaturas' },
+    ],
+  },
+  clients: {
+    label: 'Clientes',
+    icon: <People />,
+    items: [
+      { text: 'Clientes', icon: <People />, path: '/clientes' },
+      { text: 'Pets', icon: <Pets />, path: '/pets' },
+      { text: 'Agendamentos', icon: <CalendarMonth />, path: '/agenda' },
+      { text: 'Vacinação', icon: <Vaccines />, path: '/vacinas' },
+    ],
+  },
+  operations: {
+    label: 'Operações',
+    icon: <ContentCut />,
+    items: [
+      { text: 'Agenda do Dia', icon: <CalendarMonth />, path: '/agenda' },
+      { text: 'Serviços (Banho/Tosa)', icon: <ContentCut />, path: '/servicos' },
+      { text: 'Estoque', icon: <Inventory />, path: '/estoque' },
+      { text: 'Inventário', icon: <Assessment />, path: '/inventario' },
+      { text: 'Hotel & Creche', icon: <Assessment />, path: '/hotel' },
+    ],
+  },
+  financial: {
+    label: 'Financeiro',
+    icon: <MoneyIcon />,
+    items: [
+      { text: 'Contas a Receber', icon: <AccountBalance />, path: '/financeiro' },
+      { text: 'Relatórios', icon: <Assessment />, path: '/relatorios' },
+    ],
+  },
+  admin: {
+    label: 'Admin',
+    icon: <Settings />,
+    items: [
+      { text: 'Fornecedores', icon: <Business />, path: '/fornecedores' },
+      { text: 'Compras', icon: <Assessment />, path: '/compras' },
+      { text: 'Lembretes', icon: <Announcement />, path: '/lembretes' },
+      { text: 'Usuários', icon: <Group />, path: '/usuarios' },
+      { text: 'Comissões', icon: <Assessment />, path: '/comissoes' },
+      { text: 'Avaliações/NPS', icon: <Assessment />, path: '/avaliacoes' },
+      { text: 'Configurações', icon: <Settings />, path: '/configuracoes' },
+    ],
+  },
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -57,32 +121,31 @@ const Dashboard = () => {
   const dispatch = useAppDispatch();
   const { isDark, toggleTheme } = useThemeMode();
   const { user } = useAppSelector((state) => state.auth);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedCategory, setSelectedCategory] = useState<keyof typeof menuCategories>('dashboard');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const drawerWidth = sidebarExpanded ? 250 : 70;
-
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Agenda', icon: <CalendarMonth />, path: '/agenda' },
-    { text: 'Produtos', icon: <ShoppingCart />, path: '/produtos' },
-    { text: 'Vendas', icon: <Store />, path: '/vendas' },
-    { text: 'Clientes', icon: <People />, path: '/clientes' },
-    { text: 'Pets', icon: <Pets />, path: '/pets' },
-    { text: 'Estoque', icon: <Inventory />, path: '/estoque' },
-    { text: 'Serviços', icon: <ContentCut />, path: '/servicos' },
-    { text: 'Vacinação', icon: <Vaccines />, path: '/vacinas' },
-    { text: 'Relatórios', icon: <Assessment />, path: '/relatorios' },
-    { text: 'Configurações', icon: <Settings />, path: '/configuracoes' },
-  ];
-
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
+  // Detectar categoria atual baseado na rota
+  React.useEffect(() => {
+    const path = location.pathname;
+    
+    if (path === '/dashboard') {
+      setSelectedCategory('dashboard');
+    } else if (['/vendas', '/pedidos-online', '/produtos', '/catalogo-servicos', '/promocoes', '/fidelidade', '/assinaturas'].some(p => path.startsWith(p))) {
+      setSelectedCategory('sales');
+    } else if (['/clientes', '/pets', '/agenda', '/vacinas'].some(p => path.startsWith(p))) {
+      setSelectedCategory('clients');
+    } else if (['/servicos', '/estoque', '/inventario', '/hotel'].some(p => path.startsWith(p))) {
+      setSelectedCategory('operations');
+    } else if (['/financeiro', '/relatorios'].some(p => path.startsWith(p))) {
+      setSelectedCategory('financial');
+    } else if (['/fornecedores', '/compras', '/lembretes', '/usuarios', '/comissoes', '/avaliacoes', '/configuracoes'].some(p => path.startsWith(p))) {
+      setSelectedCategory('admin');
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -97,7 +160,6 @@ const Dashboard = () => {
     setNotificationsAnchorEl(null);
   };
 
-  // Notificações mockadas para loja
   const mockNotifications = [
     {
       id: 1,
@@ -133,6 +195,10 @@ const Dashboard = () => {
     },
   ];
 
+  const currentItems = selectedCategory === 'dashboard' 
+    ? [] 
+    : menuCategories[selectedCategory].items;
+
   const drawer = (
     <Box
       sx={{
@@ -144,81 +210,54 @@ const Dashboard = () => {
         flexDirection: 'column',
       }}
     >
-      <Box
-        sx={{
-          px: sidebarExpanded ? 2 : 1,
-          mb: 2,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          justifyContent: sidebarExpanded ? 'flex-start' : 'center',
-        }}
-      >
-        <Store sx={{ color: '#E47B24', fontSize: sidebarExpanded ? 32 : 28 }} />
-        {sidebarExpanded && (
-          <Typography variant="h6" fontWeight="bold" sx={{ color: '#0E6A6B' }}>
-            SuperPet
+      {/* Categoria Selecionada */}
+      {selectedCategory !== 'dashboard' && (
+        <Box sx={{ px: 2, mb: 3 }}>
+          <Typography variant="overline" sx={{ color: isDark ? '#12888A' : '#0E6A6B', fontWeight: 700, display: 'block', mb: 1 }}>
+            {menuCategories[selectedCategory].label}
           </Typography>
-        )}
-      </Box>
+          <Divider sx={{ borderColor: isDark ? '#12888A' : '#0E6A6B', borderWidth: 2 }} />
+        </Box>
+      )}
 
-      <List sx={{ flexGrow: 1 }}>
-        {menuItems.map((item) => {
+      {/* Menu Items */}
+      <List sx={{ flex: 1, px: 1.5 }}>
+        {currentItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                onClick={() => navigate(item.path)}
-                sx={{
-                  px: sidebarExpanded ? 2 : 1.5,
-                  justifyContent: sidebarExpanded ? 'flex-start' : 'center',
-                  bgcolor: isActive ? '#0E6A6B' : 'transparent',
-                  '&:hover': {
-                    bgcolor: '#0E6A6B',
-                    '& .MuiListItemIcon-root': { color: '#F8F5EE' },
-                    '& .MuiListItemText-primary': { color: '#F8F5EE' },
-                  },
+            <ListItem
+              key={item.path}
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) setMobileDrawerOpen(false);
+              }}
+              sx={{
+                mb: 0.5,
+                borderRadius: 2,
+                cursor: 'pointer',
+                bgcolor: isActive ? '#0E6A6B' : 'transparent',
+                color: isActive ? '#F8F5EE' : (isDark ? '#F8F5EE' : '#1E1E1E'),
+                '&:hover': {
+                  bgcolor: isActive ? '#0A5152' : (isDark ? 'rgba(18, 136, 138, 0.15)' : 'rgba(14, 106, 107, 0.1)'),
+                },
+                transition: 'all 0.2s',
+              }}
+            >
+              <ListItemIcon sx={{ color: isActive ? '#F8F5EE' : (isDark ? '#12888A' : '#0E6A6B'), minWidth: 40 }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                primaryTypographyProps={{
+                  fontWeight: isActive ? 600 : 500,
+                  fontSize: '0.95rem',
+                  color: isActive ? '#F8F5EE' : (isDark ? '#F8F5EE' : '#1E1E1E'),
                 }}
-              >
-                <ListItemIcon
-                  sx={{
-                    color: isActive ? '#F8F5EE' : '#0E6A6B',
-                    minWidth: sidebarExpanded ? 40 : 'auto',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                {sidebarExpanded && (
-                  <ListItemText
-                    primary={item.text}
-                    sx={{ color: isActive ? '#F8F5EE' : isDark ? '#F8F5EE' : '#1E1E1E' }}
-                  />
-                )}
-              </ListItemButton>
+              />
             </ListItem>
           );
         })}
       </List>
-
-      {/* Botão para comprimir/expandir - apenas desktop */}
-      {!isMobile && (
-        <Box sx={{ p: 1, borderTop: isDark ? '1px solid #12888A' : '1px solid #0E6A6B' }}>
-          <IconButton
-            onClick={() => setSidebarExpanded(!sidebarExpanded)}
-            sx={{
-              width: '100%',
-              color: isDark ? '#12888A' : '#0E6A6B',
-              '&:hover': {
-                bgcolor: '#0E6A6B',
-                color: '#F8F5EE',
-              },
-            }}
-          >
-            {sidebarExpanded ? <ChevronLeft /> : <ChevronRight />}
-          </IconButton>
-        </Box>
-      )}
     </Box>
   );
 
@@ -234,33 +273,67 @@ const Dashboard = () => {
         }}
       >
         <Toolbar>
-          {/* Menu Mobile */}
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              onClick={handleDrawerToggle}
-              edge="start"
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-
-          {/* Logo e Título */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-            <Store sx={{ fontSize: { xs: 24, md: 32 }, color: '#E47B24' }} />
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 3 }}>
+            <Store sx={{ fontSize: { xs: 24, md: 28 }, color: '#E47B24' }} />
             <Typography 
               variant="h6" 
               sx={{ 
                 fontWeight: 'bold', 
                 color: '#F8F5EE',
-                fontSize: { xs: '1rem', md: '1.25rem' },
+                fontSize: { xs: '1rem', md: '1.1rem' },
                 display: { xs: 'none', sm: 'block' },
               }}
             >
-              SuperPet - Gestão
+              SuperPet
             </Typography>
           </Box>
+
+          {/* Menu de Categorias (Desktop) */}
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
+              {Object.entries(menuCategories).map(([key, category]) => (
+                <Button
+                  key={key}
+                  startIcon={category.icon}
+                  onClick={() => {
+                    setSelectedCategory(key as any);
+                    if (key === 'dashboard') {
+                      navigate('/dashboard');
+                    } else if (category.items.length > 0) {
+                      navigate(category.items[0].path);
+                    }
+                  }}
+                  sx={{
+                    color: selectedCategory === key ? '#E47B24' : '#F8F5EE',
+                    bgcolor: selectedCategory === key ? 'rgba(228, 123, 36, 0.2)' : 'transparent',
+                    fontWeight: selectedCategory === key ? 700 : 500,
+                    fontSize: '0.85rem',
+                    px: 2,
+                    '&:hover': {
+                      bgcolor: 'rgba(248, 245, 238, 0.1)',
+                    },
+                  }}
+                >
+                  {category.label}
+                </Button>
+              ))}
+            </Box>
+          )}
+
+          {/* Menu Mobile Toggle */}
+          {isMobile && (
+            <>
+              <Box sx={{ flexGrow: 1 }} />
+              <IconButton
+                color="inherit"
+                onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+                sx={{ mr: 1 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            </>
+          )}
 
           {/* Tema Toggle */}
           <IconButton color="inherit" onClick={toggleTheme} sx={{ mr: { xs: 0.5, md: 1 } }}>
@@ -294,11 +367,13 @@ const Dashboard = () => {
                   {user?.name.charAt(0)}
                 </Avatar>
               }
+              sx={{ textTransform: 'none' }}
             >
               {user?.name}
             </Button>
           )}
 
+          {/* User Menu Dropdown */}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -363,85 +438,54 @@ const Dashboard = () => {
               </Typography>
             </Box>
 
-            {mockNotifications.length === 0 ? (
-              <Box sx={{ p: 3, textAlign: 'center' }}>
-                <NotificationsIcon sx={{ fontSize: 48, color: isDark ? '#12888A' : '#ccc', mb: 1 }} />
-                <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
-                  Nenhuma notificação
-                </Typography>
-              </Box>
-            ) : (
-              <List sx={{ p: 0 }}>
-                {mockNotifications.map((notification, index) => (
-                  <Box key={notification.id}>
-                    <MenuItem
-                      onClick={handleNotificationsClose}
-                      sx={{
-                        py: 2,
-                        px: { xs: 1.5, sm: 2 },
-                        alignItems: 'flex-start',
-                        '&:hover': {
-                          bgcolor: isDark ? 'rgba(228, 123, 36, 0.1)' : 'rgba(14, 106, 107, 0.05)',
-                        },
-                      }}
-                    >
-                      <ListItemIcon sx={{ mt: 0.5, minWidth: { xs: 36, sm: 48 } }}>
-                        <Box
-                          sx={{
-                            bgcolor: notification.type === 'warning' ? '#FF9800' : notification.type === 'success' ? '#4CAF50' : '#2196F3',
-                            color: '#FFF',
-                            borderRadius: '50%',
-                            width: { xs: 32, sm: 40 },
-                            height: { xs: 32, sm: 40 },
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {notification.icon}
-                        </Box>
-                      </ListItemIcon>
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography 
-                          variant="subtitle2" 
-                          fontWeight="bold" 
-                          sx={{ 
-                            color: isDark ? '#F8F5EE' : '#0E6A6B', 
-                            mb: 0.5,
-                            fontSize: { xs: '0.875rem', sm: '0.95rem' },
-                          }}
-                        >
-                          {notification.title}
-                        </Typography>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            color: isDark ? '#E6E1D6' : '#666', 
-                            mb: 0.5,
-                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                            wordBreak: 'break-word',
-                          }}
-                        >
-                          {notification.message}
-                        </Typography>
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: isDark ? '#12888A' : '#999',
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                          }}
-                        >
-                          {notification.time}
-                        </Typography>
+            <List sx={{ p: 0 }}>
+              {mockNotifications.map((notification, index) => (
+                <Box key={notification.id}>
+                  <MenuItem
+                    onClick={handleNotificationsClose}
+                    sx={{
+                      py: 2,
+                      px: { xs: 1.5, sm: 2 },
+                      alignItems: 'flex-start',
+                      '&:hover': {
+                        bgcolor: isDark ? 'rgba(228, 123, 36, 0.1)' : 'rgba(14, 106, 107, 0.05)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ mt: 0.5, minWidth: { xs: 36, sm: 48 } }}>
+                      <Box
+                        sx={{
+                          bgcolor: notification.type === 'warning' ? '#FF9800' : notification.type === 'success' ? '#4CAF50' : '#2196F3',
+                          color: '#FFF',
+                          borderRadius: '50%',
+                          width: { xs: 32, sm: 40 },
+                          height: { xs: 32, sm: 40 },
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {notification.icon}
                       </Box>
-                    </MenuItem>
-                    {index < mockNotifications.length - 1 && (
-                      <Divider sx={{ borderColor: isDark ? '#12888A' : '#E0E0E0' }} />
-                    )}
-                  </Box>
-                ))}
-              </List>
-            )}
+                    </ListItemIcon>
+                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                      <Typography variant="subtitle2" fontWeight="bold" sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', mb: 0.5, fontSize: { xs: '0.875rem', sm: '0.95rem' } }}>
+                        {notification.title}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666', mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' }, wordBreak: 'break-word' }}>
+                        {notification.message}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: isDark ? '#12888A' : '#999', fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        {notification.time}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                  {index < mockNotifications.length - 1 && (
+                    <Divider sx={{ borderColor: isDark ? '#12888A' : '#E0E0E0' }} />
+                  )}
+                </Box>
+              ))}
+            </List>
 
             <Divider sx={{ borderColor: isDark ? '#12888A' : '#0E6A6B' }} />
             <Box sx={{ p: 1.5, textAlign: 'center' }}>
@@ -462,25 +506,21 @@ const Dashboard = () => {
         </Toolbar>
       </AppBar>
 
-      <Box className="flex">
-        {/* Drawer Desktop */}
-        {!isMobile && (
+      <Box sx={{ display: 'flex', mt: '64px' }}>
+        {/* Sidebar Desktop */}
+        {!isMobile && selectedCategory !== 'dashboard' && (
           <Drawer
             variant="permanent"
-            open
             sx={{
-              width: drawerWidth,
+              width: 240,
               flexShrink: 0,
-              transition: 'width 0.3s ease',
               '& .MuiDrawer-paper': {
-                width: drawerWidth,
+                width: 240,
                 boxSizing: 'border-box',
                 bgcolor: isDark ? '#1C2128' : '#F8F5EE',
                 borderRight: isDark ? '2px solid #12888A' : '2px solid #0E6A6B',
-                marginTop: '64px',
+                top: '64px',
                 height: 'calc(100% - 64px)',
-                transition: 'width 0.3s ease',
-                overflowX: 'hidden',
               },
             }}
           >
@@ -488,20 +528,68 @@ const Dashboard = () => {
           </Drawer>
         )}
 
-        {/* Drawer Mobile */}
+        {/* Sidebar Mobile */}
         {isMobile && (
           <Drawer
-            anchor="left"
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
+            variant="temporary"
+            open={mobileDrawerOpen}
+            onClose={() => setMobileDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
             sx={{
               '& .MuiDrawer-paper': {
-                bgcolor: isDark ? '#1C2128' : '#F8F5EE',
                 width: 260,
+                bgcolor: isDark ? '#1C2128' : '#F8F5EE',
                 borderRight: isDark ? '2px solid #12888A' : '2px solid #0E6A6B',
+                top: '64px',
+                height: 'calc(100% - 64px)',
               },
             }}
           >
+            {/* Menu Categorias Mobile */}
+            <Box sx={{ p: 2 }}>
+              <Typography variant="overline" sx={{ color: isDark ? '#12888A' : '#0E6A6B', fontWeight: 700 }}>
+                Categorias
+              </Typography>
+              <List sx={{ p: 0, mt: 1 }}>
+                {Object.entries(menuCategories).map(([key, category]) => (
+                  <ListItem
+                    key={key}
+                    onClick={() => {
+                      setSelectedCategory(key as any);
+                      if (key === 'dashboard') {
+                        navigate('/dashboard');
+                        setMobileDrawerOpen(false);
+                      }
+                    }}
+                    sx={{
+                      mb: 0.5,
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      bgcolor: selectedCategory === key ? '#E47B24' : 'transparent',
+                      color: selectedCategory === key ? '#F8F5EE' : (isDark ? '#F8F5EE' : '#1E1E1E'),
+                      '&:hover': {
+                        bgcolor: selectedCategory === key ? '#C26619' : 'rgba(228, 123, 36, 0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: selectedCategory === key ? '#F8F5EE' : (isDark ? '#12888A' : '#0E6A6B'), minWidth: 36 }}>
+                      {category.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={category.label}
+                      primaryTypographyProps={{
+                        fontWeight: selectedCategory === key ? 600 : 500,
+                        fontSize: '0.9rem',
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+
+            <Divider sx={{ borderColor: isDark ? '#12888A' : '#E47B24', borderWidth: 2, mx: 2 }} />
+
+            {/* Submenu Mobile */}
             {drawer}
           </Drawer>
         )}
@@ -511,17 +599,14 @@ const Dashboard = () => {
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 2, sm: 3, md: 4, lg: 6 },
-            pt: { xs: 8, md: 4 },
-            width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-            transition: 'width 0.3s ease, margin 0.3s ease',
-            position: 'relative',
-            mt: '64px',
+            p: { xs: 2, sm: 3, md: 4 },
+            width: { 
+              xs: '100%', 
+              md: selectedCategory === 'dashboard' ? '100%' : 'calc(100% - 240px)' 
+            },
           }}
         >
-          <Container maxWidth="xl">
-            <Outlet />
-          </Container>
+          <Outlet />
         </Box>
       </Box>
     </Box>

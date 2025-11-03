@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import PrivateRoute from './components/PrivateRoute';
 import ProtectedHome from './components/ProtectedHome';
-import DashboardV2 from './components/DashboardV2';
-import CustomerDashboardV2 from './components/CustomerDashboardV2';
+import Dashboard from './components/Dashboard';
+import CustomerDashboard from './components/CustomerDashboard';
 import Login from './pages/Login';
 import RegisterPage from './pages/RegisterPage';
 
@@ -24,6 +24,15 @@ import { PromotionsPage } from './features/promotions/components';
 import { RemindersPage } from './features/reminders/components';
 import { AccountsPage } from './features/accounts/components';
 import { UsersPage } from './features/users/components';
+import { NPSPage } from './features/reviews/components';
+import { LoyaltyManagementPage } from './features/loyalty/components';
+import { SubscriptionsManagementPage } from './features/subscriptions/components';
+import { PurchasesPage } from './features/purchases/components';
+import { InventoryPage } from './features/inventory/components';
+import { CommissionsPage } from './features/commissions/components';
+import { HotelManagementPage } from './features/hotel/components';
+import { ServicesManagementPage } from './features/services/components';
+import { OnlineOrdersPage } from './features/ecommerce/components';
 import SettingsPage from './pages/SettingsPage';
 
 // Customer Pages
@@ -37,6 +46,12 @@ import CustomerOrdersPage from './pages/customer/CustomerOrdersPage';
 import CustomerSettingsPage from './pages/customer/CustomerSettingsPage';
 import CustomerPromotionsPage from './pages/customer/CustomerPromotionsPage';
 import CustomerAccountsPage from './pages/customer/CustomerAccountsPage';
+import CustomerPetCardPage from './pages/customer/CustomerPetCardPage';
+import CustomerReviewsPage from './pages/customer/CustomerReviewsPage';
+import CustomerGroomingGalleryPage from './pages/customer/CustomerGroomingGalleryPage';
+import CustomerLoyaltyPage from './pages/customer/CustomerLoyaltyPage';
+import CustomerSubscriptionsPage from './pages/customer/CustomerSubscriptionsPage';
+import CustomerHotelPage from './pages/customer/CustomerHotelPage';
 
 /**
  * SISTEMA DE ROTAS E AUTENTICAÇÃO
@@ -101,7 +116,7 @@ function App() {
             path="/"
             element={
               <PrivateRoute allowedRoles={['owner']}>
-                <DashboardV2 />
+                <Dashboard />
               </PrivateRoute>
             }
           >
@@ -120,6 +135,15 @@ function App() {
             <Route path="lembretes" element={<RemindersPage />} />
             <Route path="financeiro" element={<AccountsPage />} />
             <Route path="usuarios" element={<UsersPage />} />
+            <Route path="avaliacoes" element={<NPSPage />} />
+            <Route path="fidelidade" element={<LoyaltyManagementPage />} />
+            <Route path="assinaturas" element={<SubscriptionsManagementPage />} />
+            <Route path="compras" element={<PurchasesPage />} />
+            <Route path="inventario" element={<InventoryPage />} />
+            <Route path="comissoes" element={<CommissionsPage />} />
+            <Route path="hotel" element={<HotelManagementPage />} />
+            <Route path="catalogo-servicos" element={<ServicesManagementPage />} />
+            <Route path="pedidos-online" element={<OnlineOrdersPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
           </Route>
 
@@ -138,7 +162,7 @@ function App() {
             path="/customer"
             element={
               <PrivateRoute allowedRoles={['customer']}>
-                <CustomerDashboardV2 />
+                <CustomerDashboard />
               </PrivateRoute>
             }
           >
@@ -150,6 +174,12 @@ function App() {
             <Route path="orders" element={<CustomerOrdersPage />} />
             <Route path="promotions" element={<CustomerPromotionsPage />} />
             <Route path="accounts" element={<CustomerAccountsPage />} />
+            <Route path="pet-card" element={<CustomerPetCardPage />} />
+            <Route path="reviews" element={<CustomerReviewsPage />} />
+            <Route path="gallery" element={<CustomerGroomingGalleryPage />} />
+            <Route path="loyalty" element={<CustomerLoyaltyPage />} />
+            <Route path="subscriptions" element={<CustomerSubscriptionsPage />} />
+            <Route path="hotel" element={<CustomerHotelPage />} />
             <Route path="settings" element={<CustomerSettingsPage />} />
           </Route>
           

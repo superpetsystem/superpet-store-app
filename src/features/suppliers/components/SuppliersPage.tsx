@@ -14,6 +14,11 @@ import {
   Chip,
   TextField,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -21,16 +26,30 @@ import {
   Phone,
   Email,
   LocalShipping,
+  Edit,
+  Delete,
 } from '@mui/icons-material';
 import { useThemeMode } from '../../../context/ThemeContext';
 import { typography } from '../../../theme/typography';
 import { useSuppliers } from '../hooks/useSuppliers';
 import { SupplierCategory } from '../../../types';
+import { suppliersApi } from '../api/suppliersApi';
 
 const SuppliersPage = () => {
   const { isDark } = useThemeMode();
   const { suppliers, loading, loadSuppliers: loadSuppliersHook } = useSuppliers();
   const [categoryFilter, setCategoryFilter] = useState<SupplierCategory | 'all'>('all');
+  const [dialog, setDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: 'food' as SupplierCategory,
+    cnpj: '',
+    phone: '',
+    email: '',
+    contactPerson: '',
+    paymentTerms: '',
+    deliveryTime: '',
+  });
 
   useEffect(() => {
     loadSuppliersHook();
@@ -39,6 +58,32 @@ const SuppliersPage = () => {
   const filteredSuppliers = suppliers.filter(
     s => categoryFilter === 'all' || s.category === categoryFilter
   );
+
+  const handleCreate = async () => {
+    const newSupplier = {
+      ...formData,
+      active: true,
+      address: { street: '', number: '', city: '', state: '', zipCode: '' },
+    };
+
+    const res = await suppliersApi.create(newSupplier);
+    if (res.success) {
+      setDialog(false);
+      setFormData({ name: '', category: 'food', cnpj: '', phone: '', email: '', contactPerson: '', paymentTerms: '', deliveryTime: '' });
+      loadSuppliersHook();
+      alert('✅ Fornecedor criado!');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Confirma exclusão?')) return;
+
+    const res = await suppliersApi.delete(id);
+    if (res.success) {
+      loadSuppliersHook();
+      alert('✅ Fornecedor excluído!');
+    }
+  };
 
   const getCategoryLabel = (category: SupplierCategory) => {
     const labels = {
@@ -90,6 +135,7 @@ const SuppliersPage = () => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
+          onClick={() => setDialog(true)}
           sx={{
             bgcolor: '#E47B24',
             color: '#F8F5EE',
@@ -187,6 +233,11 @@ const SuppliersPage = () => {
                     border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
                     '&:hover': { borderColor: '#E47B24', boxShadow: 2 },
                   }}
+                  secondaryAction={
+                    <IconButton edge="end" onClick={() => handleDelete(supplier.id)} sx={{ color: '#F44336' }}>
+                      <Delete />
+                    </IconButton>
+                  }
                 >
                   <ListItemAvatar>
                     <Avatar sx={{ bgcolor: getCategoryColor(supplier.category) }}>
@@ -235,9 +286,132 @@ const SuppliersPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Dialog */}
+      <Dialog open={dialog} onClose={() => setDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', color: isDark ? '#F8F5EE' : '#0E6A6B' }}>
+          🏭 Novo Fornecedor
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={8}>
+              <TextField
+                fullWidth
+                label="Nome do Fornecedor"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                select
+                fullWidth
+                label="Categoria"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value as SupplierCategory })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                  '& .MuiSelect-select': { color: isDark ? '#F8F5EE' : '#1E1E1E' },
+                }}
+              >
+                <MenuItem value="food">Alimentos</MenuItem>
+                <MenuItem value="medicine">Medicamentos</MenuItem>
+                <MenuItem value="accessories">Acessórios</MenuItem>
+                <MenuItem value="services">Serviços</MenuItem>
+                <MenuItem value="equipment">Equipamentos</MenuItem>
+                <MenuItem value="other">Outros</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="CNPJ"
+                value={formData.cnpj}
+                onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Telefone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Pessoa de Contato"
+                value={formData.contactPerson}
+                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Prazo de Pagamento"
+                value={formData.paymentTerms}
+                onChange={(e) => setFormData({ ...formData, paymentTerms: e.target.value })}
+                placeholder="Ex: 30 dias"
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Prazo de Entrega (dias)"
+                value={formData.deliveryTime}
+                onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
+                placeholder="Ex: 5 dias"
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+          <Button onClick={() => setDialog(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleCreate} disabled={!formData.name || !formData.phone} sx={{ bgcolor: '#E47B24', '&:hover': { bgcolor: '#C26619' } }}>
+            Criar Fornecedor
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
 export default SuppliersPage;
-

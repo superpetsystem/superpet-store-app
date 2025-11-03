@@ -14,6 +14,17 @@ import promotionsReducer from './slices/promotionsSlice';
 import remindersReducer from './slices/remindersSlice';
 import accountsReducer from './slices/accountsSlice';
 import usersReducer from './slices/usersSlice';
+import crmReducer from './slices/crmSlice';
+import reviewsReducer from './slices/reviewsSlice';
+import groomingPhotosReducer from './slices/groomingPhotosSlice';
+import loyaltyReducer from './slices/loyaltySlice';
+import cartReducer from './slices/cartSlice';
+import paymentsReducer from './slices/paymentsSlice';
+import subscriptionsReducer from './slices/subscriptionsSlice';
+import purchasesReducer from './slices/purchasesSlice';
+import inventoryReducer from './slices/inventorySlice';
+import commissionsReducer from './slices/commissionsSlice';
+import hotelReducer from './slices/hotelSlice';
 
 export const store = configureStore({
   reducer: {
@@ -32,6 +43,17 @@ export const store = configureStore({
     reminders: remindersReducer,
     accounts: accountsReducer,
     users: usersReducer,
+    crm: crmReducer,
+    reviews: reviewsReducer,
+    groomingPhotos: groomingPhotosReducer,
+    loyalty: loyaltyReducer,
+    cart: cartReducer,
+    payments: paymentsReducer,
+    subscriptions: subscriptionsReducer,
+    purchases: purchasesReducer,
+    inventory: inventoryReducer,
+    commissions: commissionsReducer,
+    hotel: hotelReducer,
   },
 });
 

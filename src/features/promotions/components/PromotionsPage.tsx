@@ -10,219 +10,255 @@ import {
   ListItem,
   ListItemText,
   Chip,
-  Tab,
-  Tabs,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  IconButton,
 } from '@mui/material';
 import {
   Add as AddIcon,
   LocalOffer,
   AttachMoney,
   TrendingUp,
+  Delete,
+  Edit,
 } from '@mui/icons-material';
 import { useThemeMode } from '../../../context/ThemeContext';
 import { typography } from '../../../theme/typography';
 import { promotionsApi } from '../api/promotionsApi';
-import { Promotion, PriceTable } from '../../../types';
+import { Promotion } from '../../../types';
 
 const PromotionsPage = () => {
   const { isDark } = useThemeMode();
-  const [tabValue, setTabValue] = useState(0);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [prices, setPrices] = useState<PriceTable[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [dialog, setDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    type: 'percentage' as 'percentage' | 'fixed',
+    value: 10,
+    minPurchase: 0,
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  });
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    setLoading(true);
-    const [promosRes, pricesRes] = await Promise.all([
-      promotionsApi.promotions.getAll(),
-      promotionsApi.prices.getAll(),
-    ]);
+    const res = await promotionsApi.promotions.getAll();
+    if (res.success && res.data) setPromotions(res.data);
+  };
 
-    if (promosRes.success && promosRes.data) setPromotions(promosRes.data);
-    if (pricesRes.success && pricesRes.data) setPrices(pricesRes.data);
-    setLoading(false);
+  const handleCreate = async () => {
+    const res = await promotionsApi.promotions.create({ ...formData, active: true, code: `PROMO${Date.now()}` });
+    if (res.success) {
+      setDialog(false);
+      setFormData({ name: '', description: '', type: 'percentage', value: 10, minPurchase: 0, startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] });
+      loadData();
+      alert('✅ Promoção criada!');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Confirma exclusão?')) return;
+    const res = await promotionsApi.promotions.delete(id);
+    if (res.success) {
+      loadData();
+      alert('✅ Promoção excluída!');
+    }
   };
 
   const activePromotions = promotions.filter(p => p.active);
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            sx={{ color: isDark ? '#12888A' : '#0E6A6B', mb: 0.5, ...typography.h4 }}
-          >
+          <Typography variant="h4" fontWeight="bold" sx={{ color: isDark ? '#12888A' : '#0E6A6B', ...typography.h4 }}>
             💰 Preços e Promoções
           </Typography>
           <Typography variant="body1" sx={{ color: isDark ? '#E6E1D6' : '#666', ...typography.body1 }}>
-            Gerencie tabelas de preços e campanhas promocionais
+            Gerencie campanhas promocionais
           </Typography>
         </Box>
-
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          sx={{
-            bgcolor: '#E47B24',
-            color: '#F8F5EE',
-            fontWeight: 600,
-            '&:hover': { bgcolor: '#C26619' },
-          }}
+          onClick={() => setDialog(true)}
+          sx={{ bgcolor: '#E47B24', color: '#F8F5EE', '&:hover': { bgcolor: '#C26619' } }}
         >
           Nova Promoção
         </Button>
       </Box>
 
-      {/* Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
-          { label: 'Promoções Ativas', value: activePromotions.length, color: '#4CAF50', icon: <LocalOffer /> },
-          { label: 'Total de Promoções', value: promotions.length, color: '#2196F3', icon: <TrendingUp /> },
-          { label: 'Produtos com Preço', value: prices.length, color: '#FF9800', icon: <AttachMoney /> },
+          { label: 'Promoções Ativas', value: activePromotions.length, color: '#4CAF50' },
+          { label: 'Total', value: promotions.length, color: '#2196F3' },
         ].map((stat, idx) => (
-          <Grid item xs={12} sm={4} key={idx}>
-            <Card sx={{
-              bgcolor: isDark ? '#1C2128' : '#F8F5EE',
-              border: isDark ? `1px solid ${stat.color}` : 'none',
-              borderLeft: `4px solid ${stat.color}`,
-            }}>
+          <Grid item xs={12} sm={6} key={idx}>
+            <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', borderLeft: `4px solid ${stat.color}` }}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Box sx={{ bgcolor: stat.color, borderRadius: '50%', p: 1, mr: 2 }}>
-                    {React.cloneElement(stat.icon, { sx: { color: '#FFF' } })}
-                  </Box>
-                  <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color }}>
-                    {stat.value}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
-                  {stat.label}
-                </Typography>
+                <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, mb: 1 }}>{stat.value}</Typography>
+                <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>{stat.label}</Typography>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Tabs */}
-      <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', border: isDark ? '1px solid #12888A' : 'none' }}>
-        <Tabs
-          value={tabValue}
-          onChange={(_, v) => setTabValue(v)}
-          sx={{
-            borderBottom: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
-            '& .MuiTab-root': {
-              color: isDark ? '#E6E1D6' : '#666',
-              '&.Mui-selected': { color: '#E47B24' },
-            },
-            '& .MuiTabs-indicator': { bgcolor: '#E47B24' },
-          }}
-        >
-          <Tab label="Promoções Ativas" />
-          <Tab label="Tabela de Preços" />
-        </Tabs>
-
+      <Card sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
         <CardContent>
-          {/* Tab 1: Promoções */}
-          {tabValue === 0 && (
-            <List sx={{ p: 0 }}>
-              {activePromotions.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <LocalOffer sx={{ fontSize: 64, color: isDark ? '#12888A' : '#CCC', mb: 2 }} />
-                  <Typography sx={{ color: isDark ? '#E6E1D6' : '#999' }}>
-                    Nenhuma promoção ativa
-                  </Typography>
-                </Box>
-              ) : (
-                activePromotions.map((promo, index) => (
-                  <ListItem
-                    key={promo.id}
-                    sx={{
-                      bgcolor: isDark ? '#0D1117' : '#FFFFFF',
-                      borderRadius: 2,
-                      mb: index < activePromotions.length - 1 ? 2 : 0,
-                      border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
-                      '&:hover': { borderColor: '#E47B24', boxShadow: 2 },
-                    }}
-                  >
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                          <Typography variant="h6" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E', fontWeight: 600 }}>
-                            {promo.name}
-                          </Typography>
-                          <Chip
-                            label={`${promo.discount}${promo.type === 'percentage' ? '%' : ' OFF'}`}
-                            sx={{ bgcolor: '#4CAF50', color: '#FFF', fontWeight: 600 }}
-                          />
-                        </Box>
-                      }
-                      secondary={
-                        <>
-                          <Typography component="span" variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666', display: 'block' }}>
-                            {promo.description}
-                          </Typography>
-                          <Typography component="span" variant="caption" sx={{ color: isDark ? '#12888A' : '#999', display: 'block' }}>
-                            📅 {new Date(promo.startDate).toLocaleDateString('pt-BR')} até {new Date(promo.endDate).toLocaleDateString('pt-BR')}
-                            {promo.usedCount > 0 && ` • Usado ${promo.usedCount}x`}
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </ListItem>
-                ))
-              )}
-            </List>
-          )}
-
-          {/* Tab 2: Tabela de Preços */}
-          {tabValue === 1 && (
-            <List sx={{ p: 0 }}>
-              {prices.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <AttachMoney sx={{ fontSize: 64, color: isDark ? '#12888A' : '#CCC', mb: 2 }} />
-                  <Typography sx={{ color: isDark ? '#E6E1D6' : '#999' }}>
-                    Nenhum preço cadastrado
-                  </Typography>
-                </Box>
-              ) : (
-                prices.map((price, index) => (
-                  <ListItem
-                    key={price.id}
-                    sx={{
-                      bgcolor: isDark ? '#0D1117' : '#FFFFFF',
-                      borderRadius: 2,
-                      mb: index < prices.length - 1 ? 2 : 0,
-                      border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
-                    }}
-                  >
-                    <ListItemText
-                      primary={<Typography variant="h6" sx={{ color: isDark ? '#F8F5EE' : '#1E1E1E' }}>{price.productName}</Typography>}
-                      secondary={
-                        <Box sx={{ display: 'flex', gap: 2, mt: 1, flexWrap: 'wrap' }}>
-                          <Chip label={`Base: R$ ${price.basePrice.toFixed(2)}`} size="small" />
-                          {price.salePrice && <Chip label={`Promoção: R$ ${price.salePrice.toFixed(2)}`} size="small" sx={{ bgcolor: '#4CAF50', color: '#FFF' }} />}
-                          {price.memberPrice && <Chip label={`VIP: R$ ${price.memberPrice.toFixed(2)}`} size="small" sx={{ bgcolor: '#9C27B0', color: '#FFF' }} />}
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                ))
-              )}
-            </List>
-          )}
+          <List sx={{ p: 0 }}>
+            {promotions.map((promo, index) => (
+              <ListItem
+                key={promo.id}
+                sx={{
+                  bgcolor: isDark ? '#0D1117' : '#FFFFFF',
+                  borderRadius: 2,
+                  mb: index < promotions.length - 1 ? 2 : 0,
+                  border: isDark ? '1px solid #12888A' : '1px solid #E0E0E0',
+                }}
+                secondaryAction={
+                  <IconButton edge="end" onClick={() => handleDelete(promo.id)} sx={{ color: '#F44336' }}>
+                    <Delete />
+                  </IconButton>
+                }
+              >
+                <ListItemText
+                  primary={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="h6" sx={{ color: isDark ? '#F8F5EE' : '#0E6A6B', fontWeight: 600 }}>
+                        {promo.name}
+                      </Typography>
+                      <Chip label={promo.active ? 'Ativa' : 'Inativa'} size="small" sx={{ bgcolor: promo.active ? '#4CAF50' : '#999', color: '#FFF' }} />
+                    </Box>
+                  }
+                  secondary={
+                    <Box>
+                      <Box component="span" sx={{ color: isDark ? '#E6E1D6' : '#666', display: 'block' }}>
+                        {promo.description}
+                      </Box>
+                      <Box component="span" sx={{ color: '#E47B24', fontWeight: 600, fontSize: '0.75rem', display: 'block' }}>
+                        {promo.type === 'percentage' ? `${promo.value}% de desconto` : `R$ ${promo.value} de desconto`}
+                        {promo.minPurchase > 0 && ` • Min: R$ ${promo.minPurchase}`}
+                      </Box>
+                    </Box>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
         </CardContent>
       </Card>
+
+      {/* Create Dialog */}
+      <Dialog open={dialog} onClose={() => setDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', color: isDark ? '#F8F5EE' : '#0E6A6B' }}>
+          💰 Nova Promoção
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE', mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Nome da Promoção"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Descrição"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& textarea': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Tipo"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                  '& .MuiSelect-select': { color: isDark ? '#F8F5EE' : '#1E1E1E' },
+                }}
+              >
+                <MenuItem value="percentage">Percentual (%)</MenuItem>
+                <MenuItem value="fixed">Valor Fixo (R$)</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Valor"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: parseFloat(e.target.value) || 0 })}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Data Início"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Data Fim"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': { bgcolor: isDark ? '#0D1117' : '#FFFFFF', '& fieldset': { borderColor: isDark ? '#12888A' : '#0E6A6B' }, '& input': { color: isDark ? '#F8F5EE' : '#1E1E1E' } },
+                  '& .MuiInputLabel-root': { color: isDark ? '#12888A' : '#0E6A6B' },
+                }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ bgcolor: isDark ? '#1C2128' : '#F8F5EE' }}>
+          <Button onClick={() => setDialog(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleCreate} disabled={!formData.name} sx={{ bgcolor: '#E47B24', '&:hover': { bgcolor: '#C26619' } }}>
+            Criar Promoção
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
 export default PromotionsPage;
-
