@@ -64,11 +64,11 @@ const CustomerShopPage = () => {
 
     setLoading(true);
     const [productsRes, cartRes] = await Promise.all([
-      productsApi.getAll({ page: 1, limit: 1000 }),
+      productsApi.getProducts({ page: 1, limit: 1000 }),
       cartApi.getCart(user.id),
     ]);
 
-    if (productsRes.success && productsRes.data) setProducts(productsRes.data.items);
+    if (productsRes.success && productsRes.data) setProducts(productsRes.data.data || []);
     if (cartRes.success && cartRes.data) setCart(cartRes.data);
     setLoading(false);
   };

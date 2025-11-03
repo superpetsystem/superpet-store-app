@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -26,6 +27,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useThemeMode } from '../../context/ThemeContext';
 
 const CustomerDashboardPage = () => {
+  const navigate = useNavigate();
   const { isDark } = useThemeMode();
   const user = useAppSelector((state) => state.auth.user);
 

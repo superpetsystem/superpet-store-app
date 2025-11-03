@@ -140,15 +140,15 @@ const PromotionsPage = () => {
                     </Box>
                   }
                   secondary={
-                    <>
-                      <Typography sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
+                    <Box>
+                      <Box component="span" sx={{ color: isDark ? '#E6E1D6' : '#666', display: 'block' }}>
                         {promo.description}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#E47B24', fontWeight: 600 }}>
+                      </Box>
+                      <Box component="span" sx={{ color: '#E47B24', fontWeight: 600, fontSize: '0.75rem', display: 'block' }}>
                         {promo.type === 'percentage' ? `${promo.value}% de desconto` : `R$ ${promo.value} de desconto`}
                         {promo.minPurchase > 0 && ` • Min: R$ ${promo.minPurchase}`}
-                      </Typography>
-                    </>
+                      </Box>
+                    </Box>
                   }
                 />
               </ListItem>

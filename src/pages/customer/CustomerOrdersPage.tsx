@@ -73,7 +73,7 @@ const CustomerOrdersPage = () => {
           </Typography>
           <Button
             variant="contained"
-            href="/customer/shop-v2"
+            href="/customer/shop"
             sx={{ bgcolor: '#E47B24', '&:hover': { bgcolor: '#C26619' } }}
           >
             Ir para Loja Online

@@ -16,7 +16,7 @@ const ServicesManagementPage = () => {
     description: '',
     price: 0,
     duration: 60,
-    category: 'grooming',
+    type: 'grooming' as 'grooming' | 'veterinary' | 'hotel' | 'daycare' | 'training' | 'other',
   });
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const ServicesManagementPage = () => {
     const res = await servicesApi.create({ ...formData, active: true });
     if (res.success) {
       setDialog(false);
-      setFormData({ name: '', description: '', price: 0, duration: 60, category: 'grooming' });
+      setFormData({ name: '', description: '', price: 0, duration: 60, type: 'grooming' });
       loadData();
       alert('✅ Serviço criado!');
     }
@@ -49,7 +49,7 @@ const ServicesManagementPage = () => {
     const res = await servicesApi.update(editDialog.id, formData);
     if (res.success) {
       setEditDialog(null);
-      setFormData({ name: '', description: '', price: 0, duration: 60, category: 'grooming' });
+      setFormData({ name: '', description: '', price: 0, duration: 60, type: 'grooming' });
       loadData();
       alert('✅ Serviço atualizado!');
     }
@@ -71,7 +71,7 @@ const ServicesManagementPage = () => {
       description: service.description || '',
       price: service.price,
       duration: service.duration,
-      category: service.category,
+      type: service.type,
     });
     setEditDialog(service);
   };

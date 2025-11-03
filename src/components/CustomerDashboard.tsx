@@ -43,6 +43,8 @@ import {
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
 import { useThemeMode } from '../context/ThemeContext';
+import { petsApi } from '../features/pets/api/petsApi';
+import { setPets } from '../store/slices/petsSlice';
 
 // Categorias do menu do cliente
 const menuCategories = {
@@ -104,6 +106,19 @@ const CustomerDashboard = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<keyof typeof menuCategories>('home');
+
+  // Carregar pets do customer ao montar o componente
+  React.useEffect(() => {
+    const loadPets = async () => {
+      if (user) {
+        const res = await petsApi.getPets({ page: 1, limit: 100, customerId: user.id });
+        if (res.success && res.data) {
+          dispatch(setPets(res.data.data || []));
+        }
+      }
+    };
+    loadPets();
+  }, [user, dispatch]);
 
   // Detectar categoria atual baseado na rota
   React.useEffect(() => {

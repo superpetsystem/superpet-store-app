@@ -166,22 +166,22 @@ const CustomerVaccinationsPage = () => {
                       </Box>
                     }
                     secondary={
-                      <>
-                        <Typography variant="body2" sx={{ color: isDark ? '#E6E1D6' : '#666' }}>
+                      <Box>
+                        <Box component="span" sx={{ color: isDark ? '#E6E1D6' : '#666', fontSize: '0.875rem', display: 'block' }}>
                           📅 Aplicação: {new Date(vac.applicationDate).toLocaleDateString('pt-BR')}
                           {vac.nextDose && ` • Próxima: ${new Date(vac.nextDose).toLocaleDateString('pt-BR')}`}
-                        </Typography>
+                        </Box>
                         {vac.veterinarian && (
-                          <Typography variant="caption" sx={{ color: isDark ? '#12888A' : '#999' }}>
+                          <Box component="span" sx={{ color: isDark ? '#12888A' : '#999', fontSize: '0.75rem', display: 'block' }}>
                             👨‍⚕️ {vac.veterinarian}
-                          </Typography>
+                          </Box>
                         )}
                         {vac.notes && (
-                          <Typography variant="caption" sx={{ color: isDark ? '#E6E1D6' : '#999', display: 'block' }}>
+                          <Box component="span" sx={{ color: isDark ? '#E6E1D6' : '#999', fontSize: '0.75rem', display: 'block' }}>
                             📝 {vac.notes}
-                          </Typography>
+                          </Box>
                         )}
-                      </>
+                      </Box>
                     }
                   />
                 </ListItem>

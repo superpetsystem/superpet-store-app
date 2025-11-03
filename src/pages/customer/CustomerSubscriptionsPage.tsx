@@ -64,7 +64,7 @@ const CustomerSubscriptionsPage = () => {
     setLoading(true);
     const [subsRes, productsRes] = await Promise.all([
       subscriptionsApi.getAll(user.id),
-      productsApi.getAll({ page: 1, limit: 1000 }),
+      productsApi.getProducts({ page: 1, limit: 1000 }),
     ]);
 
     if (subsRes.success && subsRes.data) {
@@ -81,7 +81,7 @@ const CustomerSubscriptionsPage = () => {
       setDeliveries(deliveriesMap);
     }
 
-    if (productsRes.success && productsRes.data) setProducts(productsRes.data.items.filter(p => p.category === 'food'));
+    if (productsRes.success && productsRes.data) setProducts((productsRes.data.data || []).filter(p => p.category === 'food'));
     setLoading(false);
   };
 

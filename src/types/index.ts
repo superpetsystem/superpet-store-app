@@ -159,6 +159,7 @@ export interface Appointment {
   startTime: string; // HH:mm
   endTime: string; // HH:mm
   duration: number; // minutos
+  price?: number; // preço do serviço
   status: AppointmentStatus;
   employeeId?: string;
   employeeName?: string;
